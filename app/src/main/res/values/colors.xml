@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="app_title">#ff111111</color>
+    <color name="app_info">#ff35a1d4</color>
+    <color name="app_description">#ff999999</color>
+    <color name="app_num">#ff666666</color>
+
+    <color name="link_text_color">#ff35a1d4</color>
+    <color name="app_header_title">#ffffffff</color>
+    <color name="app_header_info">#ffeeeeee</color>
+    <color name="white">#ffffffff</color>
+    <color name="Black">#ff000000</color>
+    <color name="comment_title">#ff111111</color>
+    <color name="comment_time">#ffff8800</color>
+    <color name="comment_message">#ff222222</color>
+    <color name="comment_info">#ff999999</color>
+</resources>

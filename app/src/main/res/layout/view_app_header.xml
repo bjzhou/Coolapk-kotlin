@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:id="@+id/view_app_header"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/Black"
+    android:orientation="horizontal"
+    android:padding="8.0dip">
+
+    <ImageView
+        android:id="@+id/app_header_icon"
+        android:layout_width="60.0dip"
+        android:layout_height="60.0dip"
+        android:layout_marginTop="0.0dip"
+        android:src="@drawable/ic_default_thumbnail"/>
+
+    <LinearLayout
+        android:id="@+id/list_item_layoutCenter"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8.0dip"
+        android:layout_toRightOf="@+id/app_header_icon"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/app_header_title"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:ellipsize="marquee"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:marqueeRepeatLimit="1"
+            android:scrollHorizontally="true"
+            android:singleLine="true"
+            android:textColor="@color/app_header_title"
+            android:textSize="18.0dip"
+            android:textStyle="bold"/>
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="8.0dip"
+                android:layout_toLeftOf="@+id/app_header_button"
+                android:orientation="vertical">
+
+                <RatingBar
+                    android:id="@+id/app_header_ratingStar"
+                    style="?android:attr/ratingBarStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="2.0dip"
+                    android:layout_marginTop="2.0dip"
+                    android:isIndicator="true"
+                    android:rating="0.0"/>
+
+                <TextView
+                    android:id="@+id/app_header_info"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:textColor="@color/app_header_info"
+                    android:textSize="12.0dip"/>
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/app_header_button"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="3.0dip"
+                android:background="@drawable/btn_default"
+                android:textColor="@color/white"/>
+        </RelativeLayout>
+    </LinearLayout>
+</RelativeLayout>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">酷市场</string>
+    <string name="title_section1">首页</string>
+    <string name="title_section2">升级</string>
+    <string name="title_section3">设置</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="action_example">Example action</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="str_app_remark_hint">酷安点评：正在加载..</string>
+    <string name="ui_language">界面语言：...</string>
+    <string name="app_size">应用大小：...</string>
+    <string name="support_rom">支持ROM：...</string>
+    <string name="update_time">更新日期：...</string>
+    <string name="search">搜索</string>
+    <string name="search_hint">请输入搜索词</string>
+    <string name="comment">评论</string>
+    <string name="upgrade">升级</string>
+
+</resources>

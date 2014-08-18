@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_text_remark"
+                android:paddingBottom="8.0dip"
+                android:paddingLeft="28.0dip"
+                android:paddingRight="8.0dip"
+                android:paddingTop="8.0dip">
+
+    <ImageView
+        android:id="@+id/list_item_icon"
+        android:layout_width="20.0dip"
+        android:layout_height="20.0dip"
+        android:layout_marginTop="2.0dip"
+        android:src="@drawable/ic_default_avatar"/>
+
+    <LinearLayout
+        android:id="@+id/list_item_layoutCenter"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8.0dip"
+        android:layout_toRightOf="@+id/list_item_icon"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/list_item_message"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:autoLink="web"
+            android:lineSpacingMultiplier="1.2"
+            android:linksClickable="false"
+            android:textColor="@color/comment_message"
+            android:textColorLink="@color/link_text_color"
+            android:textSize="13.0dip"/>
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/list_item_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="20.0dip"
+                android:layout_toLeftOf="@+id/list_item_reply_icon"
+                android:ellipsize="end"
+                android:lineSpacingMultiplier="1.2"
+                android:singleLine="true"
+                android:textColor="@color/comment_info"
+                android:textColorLink="@color/link_text_color"
+                android:textSize="12.0dip"/>
+
+            <ImageView
+                android:id="@+id/list_item_reply_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/list_item_reply_num"
+                android:src="@drawable/ic_menu_reply"/>
+
+            <TextView
+                android:id="@+id/list_item_reply_num"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="2.0dip"
+                android:ellipsize="end"
+                android:lineSpacingMultiplier="1.2"
+                android:singleLine="true"
+                android:textColor="@color/comment_info"
+                android:textSize="12.0dip"/>
+        </RelativeLayout>
+    </LinearLayout>
+</RelativeLayout>

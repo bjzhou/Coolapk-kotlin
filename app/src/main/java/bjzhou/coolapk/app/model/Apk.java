@@ -43,6 +43,8 @@ public class Apk {
     private String downCount;
     private int adminscore;
     private int commentCount;
+    private Spanned info;
+    private Bitmap logoBitmap;
 
     public int getId() {
         return id;
@@ -323,9 +325,6 @@ public class Apk {
     public void setCommentCount(int commentCount) {
         this.commentCount = commentCount;
     }
-
-    private Spanned info;
-    private Bitmap logoBitmap;
 
     public Bitmap getLogoBitmap() {
         return logoBitmap;

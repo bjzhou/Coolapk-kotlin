@@ -1,11 +1,9 @@
 package bjzhou.coolapk.app.ui;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,7 +13,6 @@ import bjzhou.coolapk.app.R;
 import bjzhou.coolapk.app.adapter.UpgradeAdapter;
 import bjzhou.coolapk.app.custom.PullToRefreshFragment;
 import bjzhou.coolapk.app.http.HttpHelper;
-import bjzhou.coolapk.app.model.UpgradeApk;
 import bjzhou.coolapk.app.model.UpgradeApkExtend;
 import bjzhou.coolapk.app.util.Constant;
 
@@ -33,7 +30,7 @@ public class UpgradeFragment extends PullToRefreshFragment {
     private ListView mListView;
     private UpgradeAdapter mAdapter;
     private List<UpgradeApkExtend> mUpgradeList = new ArrayList<UpgradeApkExtend>();
-    private Handler mHandler = new Handler(){
+    private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -48,11 +45,11 @@ public class UpgradeFragment extends PullToRefreshFragment {
         }
     };
 
-    public static UpgradeFragment newInstance() {
-        return new UpgradeFragment();
+    public UpgradeFragment() {
     }
 
-    public UpgradeFragment() {
+    public static UpgradeFragment newInstance() {
+        return new UpgradeFragment();
     }
 
     @Override

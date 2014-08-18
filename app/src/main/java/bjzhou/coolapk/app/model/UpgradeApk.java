@@ -1,8 +1,5 @@
 package bjzhou.coolapk.app.model;
 
-import android.graphics.drawable.Drawable;
-import android.text.Spanned;
-
 /**
  * Created by bjzhou on 14-8-13.
  */

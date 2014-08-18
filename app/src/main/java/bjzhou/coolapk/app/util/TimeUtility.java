@@ -1,7 +1,5 @@
 package bjzhou.coolapk.app.util;
 
-import android.util.Log;
-
 import java.util.Calendar;
 
 /**

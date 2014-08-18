@@ -24,32 +24,32 @@ public class StringHelper {
     }
 
     public static String getFileMD5(File file) throws IOException {
-            if(!file.exists())
-              throw new IOException("The file is not exist.");
-            
-            FileInputStream fis = null;
-            DigestInputStream dis = null;
-            byte[] buff = new byte[1024];
-            try {
-                  MessageDigest md = MessageDigest.getInstance("MD5");
-                  fis = new FileInputStream(file);
-                  dis = new DigestInputStream(fis, md);
-                  
-                  // Read bytes from the file.
-                  while(dis.read(buff) != -1);
-                  
-                  byte[] md5Digests = md.digest();
-                  return byteArray2Hex(md5Digests);
-                } catch (IOException e) {
-                  e.printStackTrace();
-                } catch (NoSuchAlgorithmException e) {
-                  e.printStackTrace();
-                } finally {
-                  buff = null;
-                  if(fis != null) fis.close();
-                  if(dis != null) dis.close();
-                }
-            return null;
+        if (!file.exists())
+            throw new IOException("The file is not exist.");
+
+        FileInputStream fis = null;
+        DigestInputStream dis = null;
+        byte[] buff = new byte[1024];
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            fis = new FileInputStream(file);
+            dis = new DigestInputStream(fis, md);
+
+            // Read bytes from the file.
+            while (dis.read(buff) != -1) ;
+
+            byte[] md5Digests = md.digest();
+            return byteArray2Hex(md5Digests);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } finally {
+            buff = null;
+            if (fis != null) fis.close();
+            if (dis != null) dis.close();
+        }
+        return null;
     }
 
     public static String byteArray2Hex(byte[] hash) {
@@ -84,10 +84,10 @@ public class StringHelper {
     public static String getN27(int i) {
         String str = "";
         if (i < 27)
-            str = "0abcdefghijklmnopqrstuvwxyz".substring (i, i + 1);
+            str = "0abcdefghijklmnopqrstuvwxyz".substring(i, i + 1);
         else {
             int j = i % 27;
-            str = getN27 (i / 27) + "0abcdefghijklmnopqrstuvwxyz".substring (j, j + 1);
+            str = getN27(i / 27) + "0abcdefghijklmnopqrstuvwxyz".substring(j, j + 1);
         }
         return str;
     }

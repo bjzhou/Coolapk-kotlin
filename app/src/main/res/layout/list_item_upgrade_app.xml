@@ -18,9 +18,9 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="8.0dip"
         android:layout_marginRight="8.0dip"
+        android:layout_toLeftOf="@+id/list_item_upgrade"
         android:layout_toRightOf="@+id/list_item_icon"
-        android:orientation="vertical"
-        android:layout_toLeftOf="@+id/list_item_upgrade">
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/list_item_title"
@@ -30,9 +30,9 @@
             android:ellipsize="end"
             android:lineSpacingMultiplier="1.2"
             android:singleLine="true"
+            android:text="testApkTitle"
             android:textColor="@color/app_title"
-            android:textSize="16.0dip"
-            android:text="testApkTitle"/>
+            android:textSize="16.0dip"/>
 
         <TextView
             android:id="@+id/list_item_info"
@@ -42,29 +42,29 @@
             android:gravity="center"
             android:lineSpacingMultiplier="1.2"
             android:singleLine="true"
+            android:text="testApkInfo"
             android:textColor="@color/app_info"
-            android:textSize="12.0dip"
-            android:text="testApkInfo"/>
+            android:textSize="12.0dip"/>
 
         <TextView
             android:id="@+id/list_item_description"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="top"
+            android:text="testApkDescription"
             android:textColor="@color/app_description"
             android:textSize="12.0dip"
-            android:text="testApkDescription"
             android:visibility="gone"/>
     </LinearLayout>
 
     <Button
         android:id="@+id/list_item_upgrade"
+        style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:gravity="center"
-        android:text="@string/upgrade"
         android:background="@drawable/btn_default"
-        style="?android:attr/buttonStyleSmall" />
+        android:gravity="center"
+        android:text="@string/upgrade"/>
 </RelativeLayout>

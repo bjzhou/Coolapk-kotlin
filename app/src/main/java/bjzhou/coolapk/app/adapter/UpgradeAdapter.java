@@ -1,23 +1,16 @@
 package bjzhou.coolapk.app.adapter;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 import bjzhou.coolapk.app.R;
-import bjzhou.coolapk.app.http.HttpHelper;
+import bjzhou.coolapk.app.http.ApkDownloader;
 import bjzhou.coolapk.app.model.UpgradeApkExtend;
 import bjzhou.coolapk.app.ui.UpgradeFragment;
-import eu.chainfire.libsuperuser.Shell;
 
 import java.io.File;
 import java.util.List;
@@ -25,7 +18,7 @@ import java.util.List;
 /**
  * Created by bjzhou on 14-8-13.
  */
-public class UpgradeAdapter extends BaseAdapter{
+public class UpgradeAdapter extends BaseAdapter {
 
     private static final String TAG = "UpgradeAdapter";
     private final FragmentActivity mActivity;
@@ -75,35 +68,18 @@ public class UpgradeAdapter extends BaseAdapter{
             holder.changelogView.setText(changelog);
             holder.changelogView.setVisibility(View.VISIBLE);
         }
-        holder.upgradeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                downloadAndInstall(holder.upgradeButton, mUpgradeList.get(position));
-            }
-        });
 
-        return convertView;
-    }
-
-    private void downloadAndInstall(final Button button, final UpgradeApkExtend apkExtend) {
-        button.setText("正在准备下载");
-        int id = (int) apkExtend.getApk().getId();
-        String downloadName = apkExtend.getApk().getApkname() + "_" + apkExtend.getApk().getApkversionname() + ".apk";
-        HttpHelper.getInstance(mActivity).downloadAndInstall(id, downloadName, new HttpHelper.DownloadListener() {
+        ApkDownloader.DownloadListener downloadListener = new ApkDownloader.DownloadListener() {
             @Override
             public void onDownloading(int percent) {
-                if (percent == 100) {
-                    button.setText("正在安装");
-                } else {
-                    button.setText(percent + "%");
-                }
+                holder.upgradeButton.setText(percent + "%");
             }
 
             @Override
             public void onFailure(int errCode, String... err) {
                 switch (errCode) {
                     case DOWNLOAD_FAIL:
-                        button.setText("下载失败,点击重试");
+                        holder.upgradeButton.setText("下载失败,点击重试");
                         break;
                     case INSTALL_FAIL:
                         Toast.makeText(mActivity, err[0], Toast.LENGTH_SHORT).show();
@@ -117,23 +93,65 @@ public class UpgradeAdapter extends BaseAdapter{
 
             @Override
             public void onDownloaded() {
-                button.setText("正在安装");
+                holder.upgradeButton.setText("正在安装");
             }
 
             @Override
             public void onComplete() {
-                button.setText("安装成功");
-                NotificationManager nm = (NotificationManager) mActivity.getSystemService(Context.NOTIFICATION_SERVICE);
-                PendingIntent pi = PendingIntent.getActivity(mActivity, 0, new Intent(), 0);
-                Notification.Builder builder = new Notification.Builder(mActivity);
-                //builder.setContentTitle(title + "升级成功");
-                builder.setContentText(apkExtend.getTitle() + "升级成功");
-                builder.setContentIntent(pi);
-                builder.setSmallIcon(R.drawable.ic_stat_ok);
-                Notification notification = builder.getNotification();
-                nm.notify(R.drawable.ic_stat_ok, notification);
+                holder.upgradeButton.setText("安装成功");
             }
-        });
+        };
+        int id = (int) mUpgradeList.get(position).getApk().getId();
+        if (ApkDownloader.getInstance(mActivity).isDownloading(id)) {
+            ApkDownloader.getInstance(mActivity).setListener(id, downloadListener);
+        } else {
+            holder.upgradeButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    downloadAndInstall(holder.upgradeButton, mUpgradeList.get(position));
+                }
+            });
+        }
+
+        return convertView;
+    }
+
+    private void downloadAndInstall(final Button button, final UpgradeApkExtend apkExtend) {
+        button.setText("正在准备下载");
+        int id = (int) apkExtend.getApk().getId();
+        ApkDownloader.getInstance(mActivity).download(id, apkExtend.getApk().getApkname(), apkExtend.getTitle(),
+                apkExtend.getApk().getApkversionname(), new ApkDownloader.DownloadListener() {
+                    @Override
+                    public void onDownloading(int percent) {
+                        button.setText(percent + "%");
+                    }
+
+                    @Override
+                    public void onFailure(int errCode, String... err) {
+                        switch (errCode) {
+                            case DOWNLOAD_FAIL:
+                                button.setText("下载失败,点击重试");
+                                break;
+                            case INSTALL_FAIL:
+                                Toast.makeText(mActivity, err[0], Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(Intent.ACTION_VIEW);
+                                intent.setDataAndType(Uri.fromFile(new File(err[1])), "application/vnd.android.package-archive");
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                mActivity.startActivityForResult(intent, UpgradeFragment.INSTALL_REQUEST_CODE);
+                                break;
+                        }
+                    }
+
+                    @Override
+                    public void onDownloaded() {
+                        button.setText("正在安装");
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        button.setText("安装成功");
+                    }
+                });
     }
 
     public void setUpgradeList(List<UpgradeApkExtend> upgradeList) {

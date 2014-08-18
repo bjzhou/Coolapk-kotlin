@@ -296,6 +296,7 @@ public class ApkField {
             this.screenshot = screenshot;
         }
     }
+
     public class UserAction {
         private int fav;
         private int rate;

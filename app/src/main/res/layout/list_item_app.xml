@@ -30,9 +30,9 @@
             android:ellipsize="end"
             android:lineSpacingMultiplier="1.2"
             android:singleLine="true"
+            android:text="testApkTitle"
             android:textColor="@color/app_title"
-            android:textSize="16.0dip"
-            android:text="testApkTitle"/>
+            android:textSize="16.0dip"/>
 
         <TextView
             android:id="@+id/list_item_info"
@@ -42,9 +42,9 @@
             android:gravity="center"
             android:lineSpacingMultiplier="1.2"
             android:singleLine="true"
+            android:text="testApkInfo"
             android:textColor="@color/app_info"
-            android:textSize="12.0dip"
-            android:text="testApkInfo"/>
+            android:textSize="12.0dip"/>
 
         <TextView
             android:id="@+id/list_item_description"
@@ -54,9 +54,9 @@
             android:ellipsize="end"
             android:lineSpacingMultiplier="1.2"
             android:maxLines="2"
+            android:text="testApkDescription"
             android:textColor="@color/app_description"
             android:textSize="12.0dip"
-            android:text="testApkDescription"
             android:visibility="gone"/>
     </LinearLayout>
 
@@ -77,9 +77,9 @@
             android:gravity="center"
             android:lineSpacingMultiplier="1.2"
             android:singleLine="true"
+            android:text="100"
             android:textColor="@color/app_num"
-            android:textSize="10.0dip"
-            android:text="100"/>
+            android:textSize="10.0dip"/>
 
         <RatingBar
             android:id="@+id/list_item_ratingStar"

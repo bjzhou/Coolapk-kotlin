@@ -1,15 +1,15 @@
 package bjzhou.coolapk.app.ui;
 
-import android.app.ActionBar;
-import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.Toast;
 import bjzhou.coolapk.app.R;
 import bjzhou.coolapk.app.adapter.ApkListAdapter;
 import bjzhou.coolapk.app.custom.PullToRefreshFragment;
@@ -35,7 +35,7 @@ public class HomepageFragment extends PullToRefreshFragment implements AdapterVi
 
     private int mPage = 1;
 
-    private Handler mHandler = new Handler(){
+    private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -46,12 +46,12 @@ public class HomepageFragment extends PullToRefreshFragment implements AdapterVi
                     mPage = 1;
                     break;
                 case Constant.MSG_OBTAIN_MORE_COMPLETE:
-                    mPage ++;
+                    mPage++;
                     List<Apk> obj = (List<Apk>) msg.obj;
                     if (obj == null || obj.size() == 0) {
                         Toast.makeText(getActivity(), "没有了", Toast.LENGTH_SHORT).show();
                     }
-                    mApkList.addAll(((List<Apk>)msg.obj));
+                    mApkList.addAll(((List<Apk>) msg.obj));
                     mAdapter.setApkList(mApkList);
                     mAdapter.notifyDataSetChanged();
                     break;
@@ -60,6 +60,9 @@ public class HomepageFragment extends PullToRefreshFragment implements AdapterVi
         }
     };
 
+
+    public HomepageFragment() {
+    }
 
     public static HomepageFragment newInstance() {
         return new HomepageFragment();
@@ -71,9 +74,6 @@ public class HomepageFragment extends PullToRefreshFragment implements AdapterVi
         args.putString("query", query);
         fragment.setArguments(args);
         return fragment;
-    }
-
-    public HomepageFragment() {
     }
 
     @Override
@@ -119,7 +119,7 @@ public class HomepageFragment extends PullToRefreshFragment implements AdapterVi
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         getActivity().getSupportFragmentManager().beginTransaction()
-                .add(R.id.container, AppViewFragment.newInstance((int)id), "AppView")
+                .add(R.id.container, AppViewFragment.newInstance((int) id), "AppView")
                 .addToBackStack("AppView")
                 .commit();
     }

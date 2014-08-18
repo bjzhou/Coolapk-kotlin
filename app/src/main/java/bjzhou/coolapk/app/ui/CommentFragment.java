@@ -1,11 +1,11 @@
 package bjzhou.coolapk.app.ui;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.Fragment;
-import android.view.*;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ExpandableListView;
 import android.widget.Toast;
@@ -28,6 +28,7 @@ public class CommentFragment extends PullToRefreshFragment implements AbsListVie
     private ExpandableListView mListView;
     private List<Comment> mCommentList = new ArrayList<Comment>();
     private int mPage = 1;
+    private CommentAdapter mAdapter;
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -39,7 +40,7 @@ public class CommentFragment extends PullToRefreshFragment implements AbsListVie
                     mPage = 1;
                     break;
                 case Constant.MSG_OBTAIN_MORE_COMPLETE:
-                    mPage ++;
+                    mPage++;
                     List<Comment> obj = (List<Comment>) msg.obj;
                     if (obj == null || obj.size() == 0) {
                         Toast.makeText(getActivity(), "没有了", Toast.LENGTH_SHORT).show();
@@ -52,7 +53,9 @@ public class CommentFragment extends PullToRefreshFragment implements AbsListVie
             getPullToRefreshLayout().setRefreshComplete();
         }
     };
-    private CommentAdapter mAdapter;
+
+    public CommentFragment() {
+    }
 
     public static CommentFragment newInstance(int id) {
         CommentFragment fragment = new CommentFragment();
@@ -60,9 +63,6 @@ public class CommentFragment extends PullToRefreshFragment implements AbsListVie
         args.putInt("id", id);
         fragment.setArguments(args);
         return fragment;
-    }
-
-    public CommentFragment() {
     }
 
     @Override

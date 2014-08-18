@@ -57,6 +57,7 @@ public abstract class PullToRefreshFragment extends Fragment implements OnRefres
     public void setTitle(String title) {
         mTitleView.setText(title);
     }
+
     public void setTitle(int resId) {
         mTitleView.setText(resId);
     }

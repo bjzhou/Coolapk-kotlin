@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="libsuperuser">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/app/libs/libsuperuser.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

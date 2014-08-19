@@ -1,8 +1,10 @@
 package bjzhou.coolapk.app.ui;
 
+import android.app.ActionBar;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +24,7 @@ import java.util.List;
 /**
  * Created by bjzhou on 14-8-5.
  */
-public class CommentFragment extends PullToRefreshFragment implements AbsListView.OnScrollListener {
+public class CommentFragment extends Fragment implements AbsListView.OnScrollListener {
 
     private int mId;
     private ExpandableListView mListView;
@@ -50,7 +52,6 @@ public class CommentFragment extends PullToRefreshFragment implements AbsListVie
                     mAdapter.notifyDataSetChanged();
                     break;
             }
-            getPullToRefreshLayout().setRefreshComplete();
         }
     };
 
@@ -89,14 +90,7 @@ public class CommentFragment extends PullToRefreshFragment implements AbsListVie
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        setTitle(R.string.comment);
-        getPullToRefreshLayout().setRefreshing(true);
         HttpHelper.getInstance(getActivity()).obtainCommentList(mId, 1, mHandler);
-    }
-
-    @Override
-    protected void onActionBarClick() {
-        mListView.smoothScrollToPosition(0);
     }
 
     @Override
@@ -105,7 +99,7 @@ public class CommentFragment extends PullToRefreshFragment implements AbsListVie
             case AbsListView.OnScrollListener.SCROLL_STATE_IDLE:
                 if (view.getLastVisiblePosition() == (view.getCount() - 1)) {
                     // reached the end of the view
-                    getPullToRefreshLayout().setRefreshing(true);
+                    //TODO show loading status
                     HttpHelper.getInstance(getActivity()).obtainCommentList(mId, mPage + 1, mHandler);
                 }
                 break;
@@ -118,11 +112,5 @@ public class CommentFragment extends PullToRefreshFragment implements AbsListVie
 
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
-    }
-
-    @Override
-    public void onRefreshStarted(View view) {
-        HttpHelper.getInstance(getActivity()).obtainCommentList(mId, 1, mHandler);
     }
 }

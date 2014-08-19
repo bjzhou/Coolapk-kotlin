@@ -28,7 +28,7 @@
                 android:resource="@xml/searchable"/>
         </activity>
         <activity android:name=".ui.PhotoViewer"/>
-
+        <activity android:name=".ui.AppViewActivity"/>
         <service android:name=".services.UpgradeService"/>
     </application>
 

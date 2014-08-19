@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.Uri;
@@ -59,13 +60,23 @@ public class ApkDownloader {
             return;
         }
 
-        final String name = packageName + "_" + appVersion + ".apk";
+        final String name = getDownloadName(packageName, appVersion);
+        final String filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                + File.separator + name;
 
         final Handler handler = new Handler();
         new Thread(new Runnable() {
 
             @Override
             public void run() {
+
+
+                PackageInfo pi = mContext.getPackageManager().getPackageArchiveInfo(filePath, 0);
+                if (new File(filePath).exists() && (pi != null)) {
+                    installInternal(id, filePath, appName, handler);
+                    return;
+                }
+
                 String sid = StringHelper.getVStr("APK", StringHelper.getN27(id), Constant.APP_COOKIE_KEY, 6).trim();
                 String url = String.format(Constant.COOLAPK_PREURL + Constant.METHOD_ON_DOWNLOAD_APK, Constant.API_KEY, sid);
                 //Log.d(TAG, url);
@@ -106,8 +117,6 @@ public class ApkDownloader {
                             }
                         });
                         downloading = false;
-                        String filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                                + File.separator + name;
                         installInternal(id, filePath, appName, handler);
                     }
 
@@ -127,6 +136,10 @@ public class ApkDownloader {
 
             }
         }).start();
+    }
+
+    public static String getDownloadName(String packageName, String appVersion) {
+        return packageName + "_" + appVersion + ".apk";
     }
 
     private void installInternal(final int id, final String filePath, final String appName, Handler handler) {

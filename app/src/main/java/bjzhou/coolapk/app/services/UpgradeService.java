@@ -60,6 +60,7 @@ public class UpgradeService extends Service {
 
                                     @Override
                                     public void onComplete() {
+                                        stopSelf();
                                     }
                                 });
                     }

@@ -1,12 +1,17 @@
 package bjzhou.coolapk.app.custom;
 
 import android.app.ActionBar;
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import bjzhou.coolapk.app.R;
+import bjzhou.coolapk.app.ui.MainActivity;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
@@ -16,24 +21,12 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
  */
 public abstract class PullToRefreshFragment extends Fragment implements OnRefreshListener {
 
+    private static final String TAG = "PullToRefreshFragment";
     private PullToRefreshLayout mPullToRefreshLayout;
-    private TextView mTitleView;
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        View customView = getActivity().getLayoutInflater().inflate(R.layout.actionbar, null);
-        customView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onActionBarClick();
-            }
-        });
-        mTitleView = (TextView) customView.findViewById(R.id.action_bar_title);
-        ActionBar actionBar = getActivity().getActionBar();
-        actionBar.setCustomView(customView);
-        actionBar.setDisplayShowCustomEnabled(true);
 
         ViewGroup viewGroup = (ViewGroup) view;
         View pullable = viewGroup.findViewWithTag("Pullable");
@@ -45,7 +38,12 @@ public abstract class PullToRefreshFragment extends Fragment implements OnRefres
                 .setup(mPullToRefreshLayout);
     }
 
-    protected abstract void onActionBarClick();
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+    }
+
+    public abstract void onActionBarClick();
 
     public PullToRefreshLayout getPullToRefreshLayout() {
         return mPullToRefreshLayout;
@@ -53,12 +51,4 @@ public abstract class PullToRefreshFragment extends Fragment implements OnRefres
 
     @Override
     public abstract void onRefreshStarted(View view);
-
-    public void setTitle(String title) {
-        mTitleView.setText(title);
-    }
-
-    public void setTitle(int resId) {
-        mTitleView.setText(resId);
-    }
 }

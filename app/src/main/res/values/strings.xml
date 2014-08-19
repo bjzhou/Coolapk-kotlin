@@ -19,5 +19,6 @@
     <string name="search_hint">请输入搜索词</string>
     <string name="comment">评论</string>
     <string name="upgrade">升级</string>
+    <string name="app_view">应用详情</string>
 
 </resources>

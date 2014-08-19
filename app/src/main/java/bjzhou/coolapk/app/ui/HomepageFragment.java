@@ -1,5 +1,6 @@
 package bjzhou.coolapk.app.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -60,7 +61,6 @@ public class HomepageFragment extends PullToRefreshFragment implements AdapterVi
         }
     };
 
-
     public HomepageFragment() {
     }
 
@@ -107,21 +107,19 @@ public class HomepageFragment extends PullToRefreshFragment implements AdapterVi
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        setTitle(R.string.title_section1);
         getPullToRefreshLayout().setRefreshing(true);
     }
 
     @Override
-    protected void onActionBarClick() {
+    public void onActionBarClick() {
         mListView.smoothScrollToPosition(0);
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        getActivity().getSupportFragmentManager().beginTransaction()
-                .add(R.id.container, AppViewFragment.newInstance((int) id), "AppView")
-                .addToBackStack("AppView")
-                .commit();
+        Intent intent = new Intent(getActivity(), AppViewActivity.class);
+        intent.putExtra("id", (int)id);
+        startActivity(intent);
     }
 
 

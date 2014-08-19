@@ -65,7 +65,6 @@ public class UpgradeFragment extends PullToRefreshFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        setTitle(R.string.title_section2);
 
 
         HttpHelper.getInstance(getActivity()).obtainUpgradeVersions(mHandler);
@@ -73,7 +72,7 @@ public class UpgradeFragment extends PullToRefreshFragment {
     }
 
     @Override
-    protected void onActionBarClick() {
+    public void onActionBarClick() {
         mListView.smoothScrollToPosition(0);
     }
 

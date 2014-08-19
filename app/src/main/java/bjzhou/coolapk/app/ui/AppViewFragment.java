@@ -5,6 +5,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.text.Html;
@@ -51,14 +52,13 @@ public class AppViewFragment extends PullToRefreshFragment implements View.OnCli
     private TextView mAppTitleView;
     private RatingBar mRatingBar;
     private TextView mInfoView;
-    private Button mDownloadButton;
+    private ImageButton mDownloadButton;
     private TextView mLanguageView;
     private TextView mApkSizeView;
     private TextView mRomView;
     private TextView mUpdateView;
     private TextView mRemarkView;
     private TextView mIntroduceView;
-    private boolean showMenu = true;
     private ApkDownloader.DownloadListener downloadListener;
     private Handler mHandler = new Handler() {
         @Override
@@ -77,15 +77,16 @@ public class AppViewFragment extends PullToRefreshFragment implements View.OnCli
                 int installedVersion = getInstalledVersion(mField.getMeta().getApkname());
                 if (installedVersion == -1) {
                     mInstallStatus = 0;
-                    mDownloadButton.setText("下载(" + mField.getMeta().getApksize() + ")");
+                    //mDownloadButton.setText("下载(" + mField.getMeta().getApksize() + ")");
                 } else {
                     int version = mField.getMeta().getApkversioncode();
                     if (version > installedVersion) {
                         mInstallStatus = 2;
-                        mDownloadButton.setText("升级(" + mField.getMeta().getApksize() + ")");
+                        //mDownloadButton.setText("升级(" + mField.getMeta().getApksize() + ")");
                     } else {
                         mInstallStatus = 1;
-                        mDownloadButton.setText("已安装");
+                        //mDownloadButton.setText("已安装");
+                        mDownloadButton.setImageResource(R.drawable.ic_stat_ok);
                     }
                 }
             }
@@ -134,6 +135,7 @@ public class AppViewFragment extends PullToRefreshFragment implements View.OnCli
             mIntroduceView.setMovementMethod(LinkMovementMethod.getInstance());
         }
     };
+    private ImageButton mCommentButton;
 
     public AppViewFragment() {
     }
@@ -157,7 +159,6 @@ public class AppViewFragment extends PullToRefreshFragment implements View.OnCli
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
         View rootView = inflater.inflate(R.layout.fragment_app_view, container, false);
         View headView = rootView.findViewById(R.id.app_header);
 
@@ -165,7 +166,8 @@ public class AppViewFragment extends PullToRefreshFragment implements View.OnCli
         mAppTitleView = (TextView) headView.findViewById(R.id.app_header_title);
         mRatingBar = (RatingBar) headView.findViewById(R.id.app_header_ratingStar);
         mInfoView = (TextView) headView.findViewById(R.id.app_header_info);
-        mDownloadButton = (Button) headView.findViewById(R.id.app_header_button);
+        mDownloadButton = (ImageButton) headView.findViewById(R.id.app_header_download);
+        mCommentButton = (ImageButton) headView.findViewById(R.id.app_header_comment);
 
         for (int i = 0; i < 6; i++) {
             mScreenshotView[i] = (ImageView) rootView.findViewById(mScreenshotId[i]);
@@ -182,7 +184,7 @@ public class AppViewFragment extends PullToRefreshFragment implements View.OnCli
         downloadListener = new ApkDownloader.DownloadListener() {
             @Override
             public void onDownloading(int percent) {
-                mDownloadButton.setText(percent + "%");
+                //mDownloadButton.setText(percent + "%");
             }
 
             @Override
@@ -190,7 +192,7 @@ public class AppViewFragment extends PullToRefreshFragment implements View.OnCli
                 switch (errCode) {
                     case DOWNLOAD_FAIL:
                         mInstallStatus = -1;
-                        mDownloadButton.setText("下载失败,点击重试");
+                        //mDownloadButton.setText("下载失败,点击重试");
                         break;
                     case INSTALL_FAIL:
                         Toast.makeText(getActivity(), err[0], Toast.LENGTH_SHORT).show();
@@ -204,68 +206,43 @@ public class AppViewFragment extends PullToRefreshFragment implements View.OnCli
 
             @Override
             public void onDownloaded() {
-                mDownloadButton.setText("正在安装");
+                Toast.makeText(getActivity(), "正在安装", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onComplete() {
                 mInstallStatus = 1;
-                mDownloadButton.setText("安装成功,点击打开");
+                //mDownloadButton.setText("安装成功,点击打开");
             }
         };
+        mCommentButton.setOnClickListener(this);
 
         HttpHelper.getInstance(getActivity()).obtainApkField(mId, mHandler);
         return rootView;
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        setTitle("应用详情");
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        if (showMenu) {
-            inflater.inflate(R.menu.comment, menu);
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        showMenu = true;
-        getActivity().supportInvalidateOptionsMenu();
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_comment:
-                getActivity().getSupportFragmentManager().beginTransaction()
-                        .add(R.id.container, CommentFragment.newInstance(mId), "Comment")
-                        .addToBackStack("Comment")
-                        .commit();
-                showMenu = false;
-                getActivity().supportInvalidateOptionsMenu();
-                break;
-        }
-        return false;
-    }
-
-    @Override
     public void onClick(View v) {
 
-        if (mInstallStatus == 1) {
-            Intent intent = getActivity().getPackageManager().getLaunchIntentForPackage(mField.getMeta().getApkname());
-            startActivity(intent);
-            return;
-        }
+        if (v == mDownloadButton) {
 
-        mDownloadButton.setText("正在准备下载");
-        ApkDownloader.getInstance(getActivity()).download(mId, mField.getMeta().getApkname(),
-                mField.getMeta().getTitle(), mField.getMeta().getApkversionname(), downloadListener);
+            if (mInstallStatus == 1) {
+                Intent intent = getActivity().getPackageManager().getLaunchIntentForPackage(mField.getMeta().getApkname());
+                startActivity(intent);
+                return;
+            }
+
+            //mDownloadButton.setText("正在准备下载");
+            ApkDownloader.getInstance(getActivity()).download(mId, mField.getMeta().getApkname(),
+                    mField.getMeta().getTitle(), mField.getMeta().getApkversionname(), downloadListener);
+
+        } else {
+
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, CommentFragment.newInstance(mId), "Comment")
+                    .addToBackStack("Comment")
+                    .commit();
+        }
     }
 
     private int getInstalledVersion(String packageName) {
@@ -279,7 +256,7 @@ public class AppViewFragment extends PullToRefreshFragment implements View.OnCli
     }
 
     @Override
-    protected void onActionBarClick() {
+    public void onActionBarClick() {
     }
 
     @Override

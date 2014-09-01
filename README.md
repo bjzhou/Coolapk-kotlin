@@ -1,7 +1,8 @@
 Coolapk
 =======
 
-酷安开源版.....
+酷安开源版 
+[![Build Status](https://travis-ci.org/bjzhou/Coolapk.svg?branch=master)](https://travis-ci.org/bjzhou/Coolapk)
 
 ### 截图
 

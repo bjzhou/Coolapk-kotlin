@@ -25,5 +25,4 @@ deploy:
   file: "app/build/app-release-unsigned.apk"
   skip_cleanup: true
   on:
-    tags: true
     all_branches: true

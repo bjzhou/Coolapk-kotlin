@@ -17,4 +17,13 @@ before_script:
   
   - chmod +x gradlew
 
-script: ./gradlew check -i
+script: ./gradlew build
+
+deploy:
+  provider: releases
+  api-key: "hHfvkydjdYzCnLWU3dJT"
+  file: "app/build/app-release-unsigned.apk"
+  skip_cleanup: true
+  on:
+    tags: true
+    all_branches: true

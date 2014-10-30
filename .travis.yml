@@ -20,3 +20,4 @@ deploy:
   file: app/build/apk/app-release-unsigned.apk
   on:
     repo: bjzhou/Coolapk
+    all_branches: true

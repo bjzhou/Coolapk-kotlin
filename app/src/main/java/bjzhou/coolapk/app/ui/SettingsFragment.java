@@ -1,13 +1,11 @@
 package bjzhou.coolapk.app.ui;
 
-import android.view.View;
-import bjzhou.coolapk.app.R;
-import bjzhou.coolapk.app.custom.PullToRefreshFragment;
+import android.support.v4.app.Fragment;
 
 /**
  * Created by bjzhou on 14-8-19.
  */
-public class SettingsFragment extends PullToRefreshFragment {
+public class SettingsFragment extends Fragment {
     public SettingsFragment() {
     }
 
@@ -15,13 +13,4 @@ public class SettingsFragment extends PullToRefreshFragment {
         return new SettingsFragment();
     }
 
-    @Override
-    public void onActionBarClick() {
-
-    }
-
-    @Override
-    public void onRefreshStarted(View view) {
-
-    }
 }

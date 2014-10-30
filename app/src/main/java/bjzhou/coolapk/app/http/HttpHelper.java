@@ -74,6 +74,9 @@ public class HttpHelper {
 
     public void obtainHomepageApkList(final int page, final Handler handler) {
         if (!checkNetworkState(mContext)) {
+            Message msg = new Message();
+            msg.what = Constant.MSG_OBTAIN_FAILED;
+            handler.sendMessage(msg);
             return;
         }
         final String url = String.format(Constant.COOLAPK_PREURL + Constant.METHOD_GET_HOMEPAGE_APKLIST, Constant.API_KEY, page);

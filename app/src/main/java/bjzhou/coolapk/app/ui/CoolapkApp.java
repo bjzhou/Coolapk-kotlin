@@ -13,7 +13,7 @@ public class CoolapkApp extends Application {
     public void onCreate() {
         super.onCreate();
 
-        silentUpgrade();
+        //silentUpgrade();
     }
 
     private void silentUpgrade() {

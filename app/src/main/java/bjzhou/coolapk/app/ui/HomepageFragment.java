@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +15,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 import bjzhou.coolapk.app.R;
 import bjzhou.coolapk.app.adapter.ApkListAdapter;
-import bjzhou.coolapk.app.custom.PullToRefreshFragment;
 import bjzhou.coolapk.app.http.HttpHelper;
 import bjzhou.coolapk.app.model.Apk;
 import bjzhou.coolapk.app.util.Constant;
@@ -25,7 +26,7 @@ import java.util.List;
 /**
  * Created by bjzhou on 14-7-29.
  */
-public class HomepageFragment extends PullToRefreshFragment implements AdapterView.OnItemClickListener, AbsListView.OnScrollListener {
+public class HomepageFragment extends Fragment implements AdapterView.OnItemClickListener, AbsListView.OnScrollListener {
 
     private static final String TAG = "HomepageFragment";
     private String mQuery = null;
@@ -33,6 +34,8 @@ public class HomepageFragment extends PullToRefreshFragment implements AdapterVi
     private ListView mListView;
 
     private ApkListAdapter mAdapter;
+
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     private int mPage = 1;
 
@@ -56,8 +59,11 @@ public class HomepageFragment extends PullToRefreshFragment implements AdapterVi
                     mAdapter.setApkList(mApkList);
                     mAdapter.notifyDataSetChanged();
                     break;
+                case Constant.MSG_OBTAIN_FAILED:
+                    Toast.makeText(getActivity(), "Please Check Network!!!", Toast.LENGTH_SHORT).show();
+                    break;
             }
-            getPullToRefreshLayout().setRefreshComplete();
+            mSwipeRefreshLayout.setRefreshing(false);
         }
     };
 
@@ -98,8 +104,23 @@ public class HomepageFragment extends PullToRefreshFragment implements AdapterVi
         mListView.setAdapter(mAdapter);
 
         mListView.setOnScrollListener(this);
+        
+        mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefresh);
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.theme_default_primary);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                obtainApkList(1);
+            }
+        });
 
-        obtainApkList(1);
+        rootView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                obtainApkList(1);
+                mSwipeRefreshLayout.setRefreshing(true);
+            }
+        }, 100);
 
         return rootView;
     }
@@ -107,12 +128,6 @@ public class HomepageFragment extends PullToRefreshFragment implements AdapterVi
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getPullToRefreshLayout().setRefreshing(true);
-    }
-
-    @Override
-    public void onActionBarClick() {
-        mListView.smoothScrollToPosition(0);
     }
 
     @Override
@@ -122,19 +137,13 @@ public class HomepageFragment extends PullToRefreshFragment implements AdapterVi
         startActivity(intent);
     }
 
-
-    @Override
-    public void onRefreshStarted(View view) {
-        obtainApkList(1);
-    }
-
     @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {
         switch (scrollState) {
             case AbsListView.OnScrollListener.SCROLL_STATE_IDLE:
                 if (view.getLastVisiblePosition() == (view.getCount() - 1)) {
                     // reached the end of the view
-                    getPullToRefreshLayout().setRefreshing(true);
+                    mSwipeRefreshLayout.setRefreshing(true);
                     obtainApkList(mPage + 1);
                 }
                 break;

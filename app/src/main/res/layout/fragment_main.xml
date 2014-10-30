@@ -10,17 +10,16 @@
                 android:paddingTop="@dimen/activity_vertical_margin"
                 tools:context="bjzhou.coolapk.app.ui.MainActivity$PlaceholderFragment">
 
-    <!--<uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout-->
-    <!--android:id="@+id/ptr"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="match_parent">-->
-
-    <ListView
-        android:id="@+id/apkList"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:tag="Pullable"/>
+        android:layout_height="wrap_content">
 
-    <!--</uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout>-->
+        <ListView
+            android:id="@+id/apkList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
 
 </RelativeLayout>

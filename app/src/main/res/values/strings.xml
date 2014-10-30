@@ -20,5 +20,7 @@
     <string name="comment">评论</string>
     <string name="upgrade">升级</string>
     <string name="app_view">应用详情</string>
+    <string name="drawer_open">Open</string>
+    <string name="drawer_closed">Close</string>
 
 </resources>

@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,7 +13,6 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import bjzhou.coolapk.app.R;
 import bjzhou.coolapk.app.adapter.UpgradeAdapter;
-import bjzhou.coolapk.app.custom.PullToRefreshFragment;
 import bjzhou.coolapk.app.http.HttpHelper;
 import bjzhou.coolapk.app.model.UpgradeApkExtend;
 import bjzhou.coolapk.app.util.Constant;
@@ -22,13 +23,14 @@ import java.util.List;
 /**
  * Created by bjzhou on 14-8-13.
  */
-public class UpgradeFragment extends PullToRefreshFragment {
+public class UpgradeFragment extends Fragment {
 
     public static final int INSTALL_REQUEST_CODE = 101;
     private static final String TAG = "UpgradeFragment";
 
     private ListView mListView;
     private UpgradeAdapter mAdapter;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
     private List<UpgradeApkExtend> mUpgradeList = new ArrayList<UpgradeApkExtend>();
     private Handler mHandler = new Handler() {
         @Override
@@ -41,7 +43,7 @@ public class UpgradeFragment extends PullToRefreshFragment {
                     break;
             }
 
-            getPullToRefreshLayout().setRefreshComplete();
+            mSwipeRefreshLayout.setRefreshing(false);
         }
     };
 
@@ -59,6 +61,15 @@ public class UpgradeFragment extends PullToRefreshFragment {
         mAdapter = new UpgradeAdapter(getActivity());
         mAdapter.setUpgradeList(mUpgradeList);
         mListView.setAdapter(mAdapter);
+
+        mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefresh);
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.theme_default_primary);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                HttpHelper.getInstance(getActivity()).obtainUpgradeVersions(mHandler);
+            }
+        });
         return rootView;
     }
 
@@ -68,17 +79,7 @@ public class UpgradeFragment extends PullToRefreshFragment {
 
 
         HttpHelper.getInstance(getActivity()).obtainUpgradeVersions(mHandler);
-        getPullToRefreshLayout().setRefreshing(true);
-    }
-
-    @Override
-    public void onActionBarClick() {
-        mListView.smoothScrollToPosition(0);
-    }
-
-    @Override
-    public void onRefreshStarted(View view) {
-        HttpHelper.getInstance(getActivity()).obtainUpgradeVersions(mHandler);
+        mSwipeRefreshLayout.setRefreshing(true);
     }
 
     @Override

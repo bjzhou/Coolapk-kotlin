@@ -5,16 +5,17 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.Fragment;
 import android.text.Html;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
-import android.view.*;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.*;
 import bjzhou.coolapk.app.R;
-import bjzhou.coolapk.app.custom.PullToRefreshFragment;
 import bjzhou.coolapk.app.http.ApkDownloader;
 import bjzhou.coolapk.app.http.HttpHelper;
 import bjzhou.coolapk.app.model.ApkField;
@@ -26,7 +27,7 @@ import java.io.File;
 /**
  * Created by bjzhou on 14-7-29.
  */
-public class AppViewFragment extends PullToRefreshFragment implements View.OnClickListener {
+public class AppViewFragment extends Fragment implements View.OnClickListener {
 
     private static final String TAG = "AppViewFragment";
     private int mId;
@@ -253,13 +254,5 @@ public class AppViewFragment extends PullToRefreshFragment implements View.OnCli
         } catch (PackageManager.NameNotFoundException e) {
             return -1;
         }
-    }
-
-    @Override
-    public void onActionBarClick() {
-    }
-
-    @Override
-    public void onRefreshStarted(View view) {
     }
 }

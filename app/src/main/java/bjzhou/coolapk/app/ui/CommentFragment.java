@@ -1,6 +1,5 @@
 package bjzhou.coolapk.app.ui;
 
-import android.app.ActionBar;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -13,7 +12,6 @@ import android.widget.ExpandableListView;
 import android.widget.Toast;
 import bjzhou.coolapk.app.R;
 import bjzhou.coolapk.app.adapter.CommentAdapter;
-import bjzhou.coolapk.app.custom.PullToRefreshFragment;
 import bjzhou.coolapk.app.http.HttpHelper;
 import bjzhou.coolapk.app.model.Comment;
 import bjzhou.coolapk.app.util.Constant;

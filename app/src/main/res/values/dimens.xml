@@ -7,4 +7,5 @@
          https://developer.android.com/design/patterns/navigation-drawer.html -->
     <dimen name="navigation_drawer_width">240dp</dimen>
     <dimen name="app_icon_size">40.0dip</dimen>
+    <dimen name="card_insets">5dp</dimen>
 </resources>

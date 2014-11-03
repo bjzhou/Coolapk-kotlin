@@ -1,6 +1,10 @@
 package bjzhou.coolapk.app.ui;
 
 import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -77,6 +81,7 @@ public class HomepageFragment extends Fragment {
     private boolean loading = true;
     private int previousTotal;
     private int visibleThreshold = 5;
+    private int mInsets;
 
     public HomepageFragment() {
     }
@@ -101,6 +106,7 @@ public class HomepageFragment extends Fragment {
         if (args != null) {
             mQuery = args.getString("query");
         }
+
     }
 
     @Override
@@ -108,10 +114,18 @@ public class HomepageFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
+        mInsets = (int) getResources().getDimension(R.dimen.card_insets);
+
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.apkList);
         mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+                outRect.set(mInsets,mInsets,mInsets,mInsets);
+            }
+        });
 
         mAdapter = new ApkListAdapter(getActivity(), mRecyclerView);
         mRecyclerView.setAdapter(mAdapter);

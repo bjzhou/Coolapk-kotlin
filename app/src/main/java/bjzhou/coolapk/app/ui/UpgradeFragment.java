@@ -6,6 +6,9 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,7 +31,6 @@ public class UpgradeFragment extends Fragment {
     public static final int INSTALL_REQUEST_CODE = 101;
     private static final String TAG = "UpgradeFragment";
 
-    private ListView mListView;
     private UpgradeAdapter mAdapter;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private List<UpgradeApkExtend> mUpgradeList = new ArrayList<UpgradeApkExtend>();
@@ -39,13 +41,15 @@ public class UpgradeFragment extends Fragment {
                 case Constant.MSG_OBTAIN_COMPLETE:
                     mUpgradeList = (List<UpgradeApkExtend>) msg.obj;
                     mAdapter.setUpgradeList(mUpgradeList);
-                    mListView.setAdapter(mAdapter);
+                    mRecyclerView.setAdapter(mAdapter);
                     break;
             }
 
             mSwipeRefreshLayout.setRefreshing(false);
         }
     };
+    private RecyclerView mRecyclerView;
+    private LinearLayoutManager mLayoutManager;
 
     public UpgradeFragment() {
     }
@@ -57,10 +61,15 @@ public class UpgradeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_upgrade, null);
-        mListView = (ListView) rootView.findViewById(R.id.apkList);
-        mAdapter = new UpgradeAdapter(getActivity());
+
+        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.apkList);
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+
+        mAdapter = new UpgradeAdapter(getActivity(), mRecyclerView);
         mAdapter.setUpgradeList(mUpgradeList);
-        mListView.setAdapter(mAdapter);
+        mRecyclerView.setAdapter(mAdapter);
 
         mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefresh);
         mSwipeRefreshLayout.setColorSchemeResources(R.color.theme_default_primary);

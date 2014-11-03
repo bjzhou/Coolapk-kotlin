@@ -3,6 +3,7 @@ package bjzhou.coolapk.app.adapter;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,48 +19,27 @@ import java.util.List;
 /**
  * Created by bjzhou on 14-8-13.
  */
-public class UpgradeAdapter extends BaseAdapter {
+public class UpgradeAdapter extends RecyclerView.Adapter {
 
     private static final String TAG = "UpgradeAdapter";
     private final FragmentActivity mActivity;
+    private final RecyclerView mRecyclerView;
     private List<UpgradeApkExtend> mUpgradeList;
 
-    public UpgradeAdapter(FragmentActivity activity) {
+    public UpgradeAdapter(FragmentActivity activity, RecyclerView recyclerView) {
         mActivity = activity;
+        mRecyclerView = recyclerView;
     }
 
     @Override
-    public int getCount() {
-        return mUpgradeList.size();
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+        View convertView = mActivity.getLayoutInflater().inflate(R.layout.list_item_upgrade_app, null);
+        return  new ViewHolder(convertView);
     }
 
     @Override
-    public Object getItem(int position) {
-        return mUpgradeList.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return mUpgradeList.get(position).getApk().getId();
-    }
-
-    @Override
-    public View getView(final int position, View convertView, ViewGroup parent) {
-        final ViewHolder holder;
-        if (convertView == null) {
-            holder = new ViewHolder();
-            convertView = mActivity.getLayoutInflater().inflate(R.layout.list_item_upgrade_app, null);
-            holder.logoView = (ImageView) convertView.findViewById(R.id.list_item_icon);
-            holder.titleView = (TextView) convertView.findViewById(R.id.list_item_title);
-            holder.infoView = (TextView) convertView.findViewById(R.id.list_item_info);
-            holder.changelogView = (TextView) convertView.findViewById(R.id.list_item_description);
-            holder.upgradeButton = (Button) convertView.findViewById(R.id.list_item_upgrade);
-
-            convertView.setTag(holder);
-        } else {
-            holder = (ViewHolder) convertView.getTag();
-        }
-
+    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final int position) {
+        final ViewHolder holder = (ViewHolder) viewHolder;
         holder.titleView.setText(mUpgradeList.get(position).getTitle());
         holder.infoView.setText(mUpgradeList.get(position).getInfo());
         holder.logoView.setImageDrawable(mUpgradeList.get(position).getLogo());
@@ -112,8 +92,16 @@ public class UpgradeAdapter extends BaseAdapter {
                 }
             });
         }
+    }
 
-        return convertView;
+    @Override
+    public long getItemId(int position) {
+        return mUpgradeList.get(position).getApk().getId();
+    }
+
+    @Override
+    public int getItemCount() {
+        return mUpgradeList.size();
     }
 
     private void downloadAndInstall(final Button button, final UpgradeApkExtend apkExtend) {
@@ -158,11 +146,20 @@ public class UpgradeAdapter extends BaseAdapter {
         mUpgradeList = upgradeList;
     }
 
-    static class ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView logoView;
         TextView titleView;
         TextView infoView;
         TextView changelogView;
         Button upgradeButton;
+
+        public ViewHolder(View itemView) {
+            super(itemView);
+            logoView = (ImageView) itemView.findViewById(R.id.list_item_icon);
+            titleView = (TextView) itemView.findViewById(R.id.list_item_title);
+            infoView = (TextView) itemView.findViewById(R.id.list_item_info);
+            changelogView = (TextView) itemView.findViewById(R.id.list_item_description);
+            upgradeButton = (Button) itemView.findViewById(R.id.list_item_upgrade);
+        }
     }
 }

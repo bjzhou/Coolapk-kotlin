@@ -6,7 +6,11 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -26,12 +30,12 @@ import java.util.List;
 /**
  * Created by bjzhou on 14-7-29.
  */
-public class HomepageFragment extends Fragment implements AdapterView.OnItemClickListener, AbsListView.OnScrollListener {
+public class HomepageFragment extends Fragment {
 
     private static final String TAG = "HomepageFragment";
     private String mQuery = null;
     private List<Apk> mApkList = new ArrayList<Apk>();
-    private ListView mListView;
+    private RecyclerView mRecyclerView;
 
     private ApkListAdapter mAdapter;
 
@@ -46,7 +50,7 @@ public class HomepageFragment extends Fragment implements AdapterView.OnItemClic
                 case Constant.MSG_OBTAIN_COMPLETE:
                     mApkList = (List<Apk>) msg.obj;
                     mAdapter.setApkList(mApkList);
-                    mListView.setAdapter(mAdapter);
+                    mRecyclerView.setAdapter(mAdapter);
                     mPage = 1;
                     break;
                 case Constant.MSG_OBTAIN_MORE_COMPLETE:
@@ -66,6 +70,13 @@ public class HomepageFragment extends Fragment implements AdapterView.OnItemClic
             mSwipeRefreshLayout.setRefreshing(false);
         }
     };
+    private LinearLayoutManager mLayoutManager;
+    private int visibleItemCount;
+    private int totalItemCount;
+    private int firstVisibleItem;
+    private boolean loading = true;
+    private int previousTotal;
+    private int visibleThreshold = 5;
 
     public HomepageFragment() {
     }
@@ -97,13 +108,38 @@ public class HomepageFragment extends Fragment implements AdapterView.OnItemClic
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        mListView = (ListView) rootView.findViewById(R.id.apkList);
-        mListView.setOnItemClickListener(this);
+        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.apkList);
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
-        mAdapter = new ApkListAdapter(getActivity());
-        mListView.setAdapter(mAdapter);
+        mAdapter = new ApkListAdapter(getActivity(), mRecyclerView);
+        mRecyclerView.setAdapter(mAdapter);
 
-        mListView.setOnScrollListener(this);
+        mRecyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                visibleItemCount = mRecyclerView.getChildCount();
+                totalItemCount = mLayoutManager.getItemCount();
+                firstVisibleItem = mLayoutManager.findFirstVisibleItemPosition();
+
+                if (loading) {
+                    if (totalItemCount > previousTotal) {
+                        loading = false;
+                        previousTotal = totalItemCount;
+                    }
+                }
+                if (!loading
+                        && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
+                    // End has been reached
+                    mSwipeRefreshLayout.setRefreshing(true);
+                    obtainApkList(mPage + 1);
+                    loading = true;
+                }
+            }
+        });
         
         mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefresh);
         mSwipeRefreshLayout.setColorSchemeResources(R.color.theme_default_primary);
@@ -128,35 +164,6 @@ public class HomepageFragment extends Fragment implements AdapterView.OnItemClic
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Intent intent = new Intent(getActivity(), AppViewActivity.class);
-        intent.putExtra("id", (int)id);
-        startActivity(intent);
-    }
-
-    @Override
-    public void onScrollStateChanged(AbsListView view, int scrollState) {
-        switch (scrollState) {
-            case AbsListView.OnScrollListener.SCROLL_STATE_IDLE:
-                if (view.getLastVisiblePosition() == (view.getCount() - 1)) {
-                    // reached the end of the view
-                    mSwipeRefreshLayout.setRefreshing(true);
-                    obtainApkList(mPage + 1);
-                }
-                break;
-            case AbsListView.OnScrollListener.SCROLL_STATE_FLING:
-                break;
-            case AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
-                break;
-        }
-    }
-
-    @Override
-    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
     }
 
     private void obtainApkList(int page) {

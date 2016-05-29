@@ -1,4 +1,4 @@
-package bjzhou.coolapk.app.ui;
+package bjzhou.coolapk.app.ui.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,7 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
+
 import bjzhou.coolapk.app.R;
 import bjzhou.coolapk.app.adapter.UpgradeAdapter;
 import bjzhou.coolapk.app.http.HttpHelper;

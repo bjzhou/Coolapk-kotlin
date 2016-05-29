@@ -1,7 +1,13 @@
 Coolapk
 =======
 
-酷安开源版 
+酷安开源版
+
+### TODO
+
+* okhttp/Retrofit
+* 分类
+* 排行
 
 ### 截图
 

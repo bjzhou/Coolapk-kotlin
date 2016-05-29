@@ -1,4 +1,4 @@
-package bjzhou.coolapk.app.ui;
+package bjzhou.coolapk.app.ui.activities;
 
 import android.app.Activity;
 import android.content.Intent;

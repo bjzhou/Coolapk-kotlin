@@ -11,7 +11,7 @@ import android.widget.*;
 import bjzhou.coolapk.app.R;
 import bjzhou.coolapk.app.http.ApkDownloader;
 import bjzhou.coolapk.app.model.UpgradeApkExtend;
-import bjzhou.coolapk.app.ui.UpgradeFragment;
+import bjzhou.coolapk.app.ui.fragments.UpgradeFragment;
 
 import java.io.File;
 import java.util.List;

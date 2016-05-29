@@ -1,9 +1,5 @@
-package bjzhou.coolapk.app.ui;
+package bjzhou.coolapk.app.ui.fragments;
 
-import android.content.Intent;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,31 +10,28 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.Toast;
+
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+
 import bjzhou.coolapk.app.R;
 import bjzhou.coolapk.app.adapter.ApkListAdapter;
 import bjzhou.coolapk.app.http.HttpHelper;
 import bjzhou.coolapk.app.model.Apk;
 import bjzhou.coolapk.app.util.Constant;
 
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by bjzhou on 14-7-29.
  */
-public class HomepageFragment extends Fragment {
+public class HomepageFragment extends Fragment implements Handler.Callback {
 
     private static final String TAG = "HomepageFragment";
     private String mQuery = null;
-    private List<Apk> mApkList = new ArrayList<Apk>();
+    private List<Apk> mApkList = new ArrayList<>();
     private RecyclerView mRecyclerView;
 
     private ApkListAdapter mAdapter;
@@ -47,33 +40,7 @@ public class HomepageFragment extends Fragment {
 
     private int mPage = 1;
 
-    private Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case Constant.MSG_OBTAIN_COMPLETE:
-                    mApkList = (List<Apk>) msg.obj;
-                    mAdapter.setApkList(mApkList);
-                    mRecyclerView.setAdapter(mAdapter);
-                    mPage = 1;
-                    break;
-                case Constant.MSG_OBTAIN_MORE_COMPLETE:
-                    mPage++;
-                    List<Apk> obj = (List<Apk>) msg.obj;
-                    if (obj == null || obj.size() == 0) {
-                        Toast.makeText(getActivity(), "没有了", Toast.LENGTH_SHORT).show();
-                    }
-                    mApkList.addAll(((List<Apk>) msg.obj));
-                    mAdapter.setApkList(mApkList);
-                    mAdapter.notifyDataSetChanged();
-                    break;
-                case Constant.MSG_OBTAIN_FAILED:
-                    Toast.makeText(getActivity(), "Please Check Network!!!", Toast.LENGTH_SHORT).show();
-                    break;
-            }
-            mSwipeRefreshLayout.setRefreshing(false);
-        }
-    };
+    private Handler mHandler = new Handler(this);
     private LinearLayoutManager mLayoutManager;
     private int visibleItemCount;
     private int totalItemCount;
@@ -186,5 +153,38 @@ public class HomepageFragment extends Fragment {
         } else {
             HttpHelper.getInstance(getActivity()).obtainSearchApkList(URLEncoder.encode(mQuery), page, mHandler);
         }
+    }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        mSwipeRefreshLayout.setRefreshing(false);
+        switch (msg.what) {
+            case Constant.MSG_OBTAIN_COMPLETE:
+                mApkList = (List<Apk>) msg.obj;
+                mAdapter.setApkList(mApkList);
+                mRecyclerView.setAdapter(mAdapter);
+                mPage = 1;
+                return true;
+            case Constant.MSG_OBTAIN_MORE_COMPLETE:
+                mPage++;
+                List<Apk> obj = (List<Apk>) msg.obj;
+                if (obj == null || obj.size() == 0) {
+                    Toast.makeText(getActivity(), "没有了", Toast.LENGTH_SHORT).show();
+                }
+                mApkList.addAll(((List<Apk>) msg.obj));
+                mAdapter.setApkList(mApkList);
+                mAdapter.notifyDataSetChanged();
+                return true;
+            case Constant.MSG_OBTAIN_FAILED:
+                Toast.makeText(getActivity(), "Please Check Network!!!", Toast.LENGTH_SHORT).show();
+                return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mHandler.removeCallbacksAndMessages(null);
     }
 }

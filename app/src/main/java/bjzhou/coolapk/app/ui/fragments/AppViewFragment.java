@@ -1,9 +1,8 @@
-package bjzhou.coolapk.app.ui;
+package bjzhou.coolapk.app.ui.fragments;
 
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -14,15 +13,20 @@ import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.RatingBar;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.squareup.picasso.Picasso;
+
 import bjzhou.coolapk.app.R;
 import bjzhou.coolapk.app.http.ApkDownloader;
 import bjzhou.coolapk.app.http.HttpHelper;
 import bjzhou.coolapk.app.model.ApkField;
+import bjzhou.coolapk.app.ui.activities.PhotoViewer;
 import bjzhou.coolapk.app.util.TimeUtility;
-import com.squareup.picasso.Picasso;
-
-import java.io.File;
 
 /**
  * Created by bjzhou on 14-7-29.
@@ -196,17 +200,16 @@ public class AppViewFragment extends Fragment implements View.OnClickListener {
                         //mDownloadButton.setText("下载失败,点击重试");
                         break;
                     case INSTALL_FAIL:
-                        Toast.makeText(getActivity(), err[0], Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setDataAndType(Uri.fromFile(new File(err[1])), "application/vnd.android.package-archive");
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
+                        if (getActivity() != null) {
+                            Toast.makeText(getActivity(), err[0], Toast.LENGTH_SHORT).show();
+                        }
                         break;
                 }
             }
 
             @Override
             public void onDownloaded() {
+                if (getActivity() == null) return;
                 Toast.makeText(getActivity(), "正在安装", Toast.LENGTH_SHORT).show();
             }
 

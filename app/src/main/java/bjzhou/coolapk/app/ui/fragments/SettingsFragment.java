@@ -1,4 +1,4 @@
-package bjzhou.coolapk.app.ui;
+package bjzhou.coolapk.app.ui.fragments;
 
 import android.support.v4.app.Fragment;
 

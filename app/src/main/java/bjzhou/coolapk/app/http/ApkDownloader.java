@@ -1,5 +1,6 @@
 package bjzhou.coolapk.app.http;
 
+import android.Manifest;
 import android.app.DownloadManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -13,15 +14,17 @@ import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
-import bjzhou.coolapk.app.R;
-import bjzhou.coolapk.app.util.Constant;
-import bjzhou.coolapk.app.util.StringHelper;
-import eu.chainfire.libsuperuser.Shell;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import bjzhou.coolapk.app.R;
+import bjzhou.coolapk.app.ui.base.BaseActivity;
+import bjzhou.coolapk.app.util.Constant;
+import bjzhou.coolapk.app.util.StringHelper;
+import eu.chainfire.libsuperuser.Shell;
 
 /**
  * Created by bjzhou on 14-8-18.
@@ -32,7 +35,8 @@ public class ApkDownloader {
     private final Context mContext;
     private final DownloadManager downloadManager;
 
-    private Map<Integer, DownloadListener> downloadingIds = new HashMap<Integer, DownloadListener>();
+    private Map<Integer, DownloadListener> downloadingIds = new HashMap<>();
+    private boolean mPermissionGranted = false;
 
     private ApkDownloader(Context context) {
         mContext = context;
@@ -46,6 +50,15 @@ public class ApkDownloader {
         return instance;
     }
 
+    public void checkPermission(BaseActivity activity) {
+        activity.checkPermissions(new BaseActivity.PermissionListener() {
+            @Override
+            public void onResult(String permission, boolean succeed) {
+                mPermissionGranted = succeed;
+            }
+        }, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+    }
+
     public static boolean checkNetworkState(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnectedOrConnecting();
@@ -53,6 +66,10 @@ public class ApkDownloader {
 
     public void download(final int id, String packageName, final String appName, String appVersion, final DownloadListener _listener) {
         if (!checkNetworkState(mContext)) {
+            return;
+        }
+
+        if (!mPermissionGranted) {
             return;
         }
 
@@ -70,6 +87,7 @@ public class ApkDownloader {
             @Override
             public void run() {
 
+                downloadingIds.put(id, _listener);
 
                 PackageInfo pi = mContext.getPackageManager().getPackageArchiveInfo(filePath, 0);
                 if (new File(filePath).exists() && (pi != null)) {
@@ -80,8 +98,6 @@ public class ApkDownloader {
                 String sid = StringHelper.getVStr("APK", StringHelper.getN27(id), Constant.APP_COOKIE_KEY, 6).trim();
                 String url = String.format(Constant.COOLAPK_PREURL + Constant.METHOD_ON_DOWNLOAD_APK, Constant.API_KEY, sid);
                 //Log.d(TAG, url);
-
-                downloadingIds.put(id, _listener);
 
                 DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
                 request.setDestinationInExternalPublicDir(Constant.DOWNLOAD_DIR, name);
@@ -143,11 +159,13 @@ public class ApkDownloader {
     }
 
     private void installInternal(final int id, final String filePath, final String appName, Handler handler) {
+        if (downloadingIds.get(id) == null) return;
         final List<String> result = Shell.SU.run("pm install -r " + filePath);
         if (result == null || result.size() == 0) {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    installInternal2(filePath);
                     downloadingIds.get(id).onFailure(DownloadListener.INSTALL_FAIL, "root problem", filePath);
                     downloadingIds.remove(id);
                 }
@@ -168,11 +186,19 @@ public class ApkDownloader {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    installInternal2(filePath);
                     downloadingIds.get(id).onFailure(DownloadListener.INSTALL_FAIL, result.get(0), filePath);
                     downloadingIds.remove(id);
                 }
             });
         }
+    }
+
+    private void installInternal2(String filePath) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(Uri.fromFile(new File(filePath)), "application/vnd.android.package-archive");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mContext.startActivity(intent);
     }
 
     public boolean isDownloading(int id) {

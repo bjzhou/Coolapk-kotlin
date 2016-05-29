@@ -1,4 +1,4 @@
-package bjzhou.coolapk.app.ui;
+package bjzhou.coolapk.app.ui.fragments;
 
 import android.os.Bundle;
 import android.os.Handler;

@@ -7,13 +7,12 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import bjzhou.coolapk.app.R;
 import bjzhou.coolapk.app.model.Apk;
-import bjzhou.coolapk.app.ui.AppViewActivity;
+import bjzhou.coolapk.app.ui.activities.AppViewActivity;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;

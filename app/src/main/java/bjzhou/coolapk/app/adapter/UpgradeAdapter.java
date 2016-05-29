@@ -7,14 +7,18 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.File;
+import java.util.List;
+
 import bjzhou.coolapk.app.R;
 import bjzhou.coolapk.app.http.ApkDownloader;
 import bjzhou.coolapk.app.model.UpgradeApkExtend;
 import bjzhou.coolapk.app.ui.fragments.UpgradeFragment;
-
-import java.io.File;
-import java.util.List;
 
 /**
  * Created by bjzhou on 14-8-13.
@@ -33,12 +37,12 @@ public class UpgradeAdapter extends RecyclerView.Adapter {
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-        View convertView = mActivity.getLayoutInflater().inflate(R.layout.list_item_upgrade_app, null);
+        View convertView = mActivity.getLayoutInflater().inflate(R.layout.list_item_upgrade_app, viewGroup, false);
         return  new ViewHolder(convertView);
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
         final ViewHolder holder = (ViewHolder) viewHolder;
         holder.titleView.setText(mUpgradeList.get(position).getTitle());
         holder.infoView.setText(mUpgradeList.get(position).getInfo());
@@ -88,7 +92,7 @@ public class UpgradeAdapter extends RecyclerView.Adapter {
             holder.upgradeButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    downloadAndInstall(holder.upgradeButton, mUpgradeList.get(position));
+                    downloadAndInstall(holder.upgradeButton, mUpgradeList.get(holder.getAdapterPosition()));
                 }
             });
         }

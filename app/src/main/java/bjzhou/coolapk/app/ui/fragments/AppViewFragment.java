@@ -31,7 +31,7 @@ import bjzhou.coolapk.app.util.TimeUtility;
 /**
  * Created by bjzhou on 14-7-29.
  */
-public class AppViewFragment extends Fragment implements View.OnClickListener {
+public class AppViewFragment extends Fragment implements View.OnClickListener, Handler.Callback {
 
     private static final String TAG = "AppViewFragment";
     private int mId;
@@ -65,81 +65,7 @@ public class AppViewFragment extends Fragment implements View.OnClickListener {
     private TextView mRemarkView;
     private TextView mIntroduceView;
     private ApkDownloader.DownloadListener downloadListener;
-    private Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            mField = (ApkField) msg.obj;
-            Picasso.with(getActivity())
-                    .load(mField.getMeta().getLogo())
-                    .placeholder(R.drawable.ic_default_avatar)
-                    .into(mAppIconView);
-            mAppTitleView.setText(mField.getMeta().getTitle());
-            mRatingBar.setRating(mField.getMeta().getScore());
-            mInfoView.setText(mField.getMeta().getApkversionname());
-            if (ApkDownloader.getInstance(getActivity()).isDownloading(mId)) {
-                ApkDownloader.getInstance(getActivity()).setListener(mId, downloadListener);
-            } else {
-                int installedVersion = getInstalledVersion(mField.getMeta().getApkname());
-                if (installedVersion == -1) {
-                    mInstallStatus = 0;
-                    //mDownloadButton.setText("下载(" + mField.getMeta().getApksize() + ")");
-                } else {
-                    int version = mField.getMeta().getApkversioncode();
-                    if (version > installedVersion) {
-                        mInstallStatus = 2;
-                        //mDownloadButton.setText("升级(" + mField.getMeta().getApksize() + ")");
-                    } else {
-                        mInstallStatus = 1;
-                        //mDownloadButton.setText("已安装");
-                        mDownloadButton.setImageResource(R.drawable.ic_stat_ok);
-                    }
-                }
-            }
-
-            screenshots = mField.getField().getScreenshots().split(",");
-            for (int i = 0; i < screenshots.length; i++) {
-                mScreenshotView[i].setVisibility(View.VISIBLE);
-                Picasso.with(getActivity())
-                        .load(screenshots[i])
-                        .fit().centerCrop()
-                        .placeholder(R.drawable.screenshot_small)
-                        .into(mScreenshotView[i]);
-                mScreenshotView[i].setTag(i);
-                mScreenshotView[i].setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (screenshots == null) {
-                            return;
-                        }
-
-                        int position = (Integer) v.getTag();
-                        Intent intent = new Intent(getActivity(), PhotoViewer.class);
-                        intent.putExtra("screenshots", screenshots);
-                        intent.putExtra("index", position);
-                        startActivity(intent);
-                    }
-                });
-            }
-
-            mLanguageView.setText("界面语言 : " + mField.getField().getLanguage());
-            mApkSizeView.setText("应用大小 : " + mField.getMeta().getApksize());
-            mRomView.setText("支持ROM : " + mField.getMeta().getRomversion() + "及更高版本");
-            mUpdateView.setText("更新日期 : " + TimeUtility.getTime(mField.getMeta().getLastupdate()));
-            mRemarkView.setText("酷安点评 : " + mField.getField().getRemark());
-            String introduce = mField.getField().getIntroduce() + "<br/>";
-            if (!TextUtils.isEmpty(mField.getField().getChangelog())) {
-                introduce += "<br/><strong>" + mField.getMeta().getApkversionname() + " :</strong><br/>"
-                        + mField.getField().getChangelog() + "<br/>";
-            }
-            if (!TextUtils.isEmpty(mField.getField().getChangelog())) {
-                introduce += "<br/><strong>更新记录 :</strong><br/>"
-                        + mField.getField().getChangehistory();
-            }
-            introduce = introduce.replace("\n", "<br/>");
-            mIntroduceView.setText(Html.fromHtml(introduce));
-            mIntroduceView.setMovementMethod(LinkMovementMethod.getInstance());
-        }
-    };
+    private Handler mHandler = new Handler(this);
     private ImageButton mCommentButton;
 
     public AppViewFragment() {
@@ -257,5 +183,86 @@ public class AppViewFragment extends Fragment implements View.OnClickListener {
         } catch (PackageManager.NameNotFoundException e) {
             return -1;
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mHandler.removeCallbacksAndMessages(null);
+    }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        mField = (ApkField) msg.obj;
+        Picasso.with(getActivity())
+                .load(mField.getMeta().getLogo())
+                .placeholder(R.drawable.ic_default_avatar)
+                .into(mAppIconView);
+        mAppTitleView.setText(mField.getMeta().getTitle());
+        mRatingBar.setRating(mField.getMeta().getScore());
+        mInfoView.setText(mField.getMeta().getApkversionname());
+        if (ApkDownloader.getInstance(getActivity()).isDownloading(mId)) {
+            ApkDownloader.getInstance(getActivity()).setListener(mId, downloadListener);
+        } else {
+            int installedVersion = getInstalledVersion(mField.getMeta().getApkname());
+            if (installedVersion == -1) {
+                mInstallStatus = 0;
+                //mDownloadButton.setText("下载(" + mField.getMeta().getApksize() + ")");
+            } else {
+                int version = mField.getMeta().getApkversioncode();
+                if (version > installedVersion) {
+                    mInstallStatus = 2;
+                    //mDownloadButton.setText("升级(" + mField.getMeta().getApksize() + ")");
+                } else {
+                    mInstallStatus = 1;
+                    //mDownloadButton.setText("已安装");
+                    mDownloadButton.setImageResource(R.drawable.ic_stat_ok);
+                }
+            }
+        }
+
+        screenshots = mField.getField().getScreenshots().split(",");
+        for (int i = 0; i < screenshots.length; i++) {
+            mScreenshotView[i].setVisibility(View.VISIBLE);
+            Picasso.with(getActivity())
+                    .load(screenshots[i])
+                    .fit().centerCrop()
+                    .placeholder(R.drawable.screenshot_small)
+                    .into(mScreenshotView[i]);
+            mScreenshotView[i].setTag(i);
+            mScreenshotView[i].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (screenshots == null) {
+                        return;
+                    }
+
+                    int position = (Integer) v.getTag();
+                    Intent intent = new Intent(getActivity(), PhotoViewer.class);
+                    intent.putExtra("screenshots", screenshots);
+                    intent.putExtra("index", position);
+                    startActivity(intent);
+                }
+            });
+        }
+
+        mLanguageView.setText("界面语言 : " + mField.getField().getLanguage());
+        mApkSizeView.setText("应用大小 : " + mField.getMeta().getApksize());
+        mRomView.setText("支持ROM : " + mField.getMeta().getRomversion() + "及更高版本");
+        mUpdateView.setText("更新日期 : " + TimeUtility.getTime(mField.getMeta().getLastupdate()));
+        mRemarkView.setText("酷安点评 : " + mField.getField().getRemark());
+        String introduce = mField.getField().getIntroduce() + "<br/>";
+        if (!TextUtils.isEmpty(mField.getField().getChangelog())) {
+            introduce += "<br/><strong>" + mField.getMeta().getApkversionname() + " :</strong><br/>"
+                    + mField.getField().getChangelog() + "<br/>";
+        }
+        if (!TextUtils.isEmpty(mField.getField().getChangelog())) {
+            introduce += "<br/><strong>更新记录 :</strong><br/>"
+                    + mField.getField().getChangehistory();
+        }
+        introduce = introduce.replace("\n", "<br/>");
+        mIntroduceView.setText(Html.fromHtml(introduce));
+        mIntroduceView.setMovementMethod(LinkMovementMethod.getInstance());
+        return true;
     }
 }

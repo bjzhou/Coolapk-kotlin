@@ -9,13 +9,15 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
+
+import java.util.List;
+
 import bjzhou.coolapk.app.R;
 import bjzhou.coolapk.app.model.Comment;
 import bjzhou.coolapk.app.model.Reply;
 import bjzhou.coolapk.app.util.TimeUtility;
-import com.squareup.picasso.Picasso;
-
-import java.util.List;
 
 /**
  * Created by bjzhou on 14-8-8.
@@ -79,7 +81,7 @@ public class CommentAdapter extends BaseExpandableListAdapter {
         View view = convertView;
         if (view == null) {
             holder = new ViewHolder();
-            view = mActivity.getLayoutInflater().inflate(R.layout.list_item_comment, null);
+            view = mActivity.getLayoutInflater().inflate(R.layout.list_item_comment, parent, false);
             holder.userIconView = (ImageView) view.findViewById(R.id.list_item_icon);
             holder.titleView = (TextView) view.findViewById(R.id.list_item_title);
             holder.timeView = (TextView) view.findViewById(R.id.list_item_time);
@@ -125,7 +127,7 @@ public class CommentAdapter extends BaseExpandableListAdapter {
             View view = convertView;
             if (view == null) {
                 holder = new ReplyViewHolder();
-                view = mActivity.getLayoutInflater().inflate(R.layout.list_item_comment_reply, null);
+                view = mActivity.getLayoutInflater().inflate(R.layout.list_item_comment_reply, parent, false);
                 holder.userIconView = (ImageView) view.findViewById(R.id.list_item_icon);
                 holder.msgView = (TextView) view.findViewById(R.id.list_item_message);
 

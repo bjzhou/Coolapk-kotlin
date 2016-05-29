@@ -1,6 +1,7 @@
 package bjzhou.coolapk.app.util;
 
 import java.util.Calendar;
+import java.util.Locale;
 
 /**
  * User: qii
@@ -19,7 +20,6 @@ public class TimeUtility {
     private static java.text.SimpleDateFormat dayFormat = null;
     private static java.text.SimpleDateFormat dateFormat = null;
     private static java.text.SimpleDateFormat yearFormat = null;
-
 
     private TimeUtility() {
 
@@ -56,7 +56,7 @@ public class TimeUtility {
 
         if (calHours < 24 && isSameDay(nowCalendar, msgCalendar)) {
             if (dayFormat == null)
-                dayFormat = new java.text.SimpleDateFormat("HH:mm");
+                dayFormat = new java.text.SimpleDateFormat("HH:mm", Locale.US);
 
             String result = dayFormat.format(msgCalendar.getTime());
             return new StringBuilder().append("今天").append(" ").append(result).toString();
@@ -69,21 +69,21 @@ public class TimeUtility {
         if (calDay < 31) {
             if (isYesterDay(nowCalendar, msgCalendar)) {
                 if (dayFormat == null)
-                    dayFormat = new java.text.SimpleDateFormat("HH:mm");
+                    dayFormat = new java.text.SimpleDateFormat("HH:mm", Locale.US);
 
                 String result = dayFormat.format(msgCalendar.getTime());
                 return new StringBuilder("昨天").append(" ").append(result).toString();
 
             } else if (isTheDayBeforeYesterDay(nowCalendar, msgCalendar)) {
                 if (dayFormat == null)
-                    dayFormat = new java.text.SimpleDateFormat("HH:mm");
+                    dayFormat = new java.text.SimpleDateFormat("HH:mm", Locale.US);
 
                 String result = dayFormat.format(msgCalendar.getTime());
                 return new StringBuilder("前天").append(" ").append(result).toString();
 
             } else {
                 if (dateFormat == null)
-                    dateFormat = new java.text.SimpleDateFormat(DATE_FORMAT);
+                    dateFormat = new java.text.SimpleDateFormat(DATE_FORMAT, Locale.US);
 
                 String result = dateFormat.format(msgCalendar.getTime());
                 return new StringBuilder(result).toString();
@@ -94,14 +94,14 @@ public class TimeUtility {
 
         if (calMonth < 12 && isSameYear(nowCalendar, msgCalendar)) {
             if (dateFormat == null)
-                dateFormat = new java.text.SimpleDateFormat(DATE_FORMAT);
+                dateFormat = new java.text.SimpleDateFormat(DATE_FORMAT, Locale.US);
 
             String result = dateFormat.format(msgCalendar.getTime());
             return new StringBuilder().append(result).toString();
 
         }
         if (yearFormat == null)
-            yearFormat = new java.text.SimpleDateFormat(YEAR_FORMAT);
+            yearFormat = new java.text.SimpleDateFormat(YEAR_FORMAT, Locale.US);
         String result = yearFormat.format(msgCalendar.getTime());
         return new StringBuilder().append(result).toString();
 

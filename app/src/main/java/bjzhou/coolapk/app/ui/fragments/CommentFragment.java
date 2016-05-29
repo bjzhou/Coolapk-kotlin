@@ -10,48 +10,27 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ExpandableListView;
 import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import bjzhou.coolapk.app.R;
 import bjzhou.coolapk.app.adapter.CommentAdapter;
 import bjzhou.coolapk.app.http.HttpHelper;
 import bjzhou.coolapk.app.model.Comment;
 import bjzhou.coolapk.app.util.Constant;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by bjzhou on 14-8-5.
  */
-public class CommentFragment extends Fragment implements AbsListView.OnScrollListener {
+public class CommentFragment extends Fragment implements AbsListView.OnScrollListener, Handler.Callback {
 
     private int mId;
     private ExpandableListView mListView;
     private List<Comment> mCommentList = new ArrayList<Comment>();
     private int mPage = 1;
     private CommentAdapter mAdapter;
-    private Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case Constant.MSG_OBTAIN_COMPLETE:
-                    mCommentList = (List<Comment>) msg.obj;
-                    mAdapter.setCommentList(mCommentList);
-                    mListView.setAdapter(mAdapter);
-                    mPage = 1;
-                    break;
-                case Constant.MSG_OBTAIN_MORE_COMPLETE:
-                    mPage++;
-                    List<Comment> obj = (List<Comment>) msg.obj;
-                    if (obj == null || obj.size() == 0) {
-                        Toast.makeText(getActivity(), "没有了", Toast.LENGTH_SHORT).show();
-                    }
-                    mCommentList.addAll(((List<Comment>) msg.obj));
-                    mAdapter.setCommentList(mCommentList);
-                    mAdapter.notifyDataSetChanged();
-                    break;
-            }
-        }
-    };
+    private Handler mHandler = new Handler(this);
 
     public CommentFragment() {
     }
@@ -110,5 +89,34 @@ public class CommentFragment extends Fragment implements AbsListView.OnScrollLis
 
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mHandler.removeCallbacksAndMessages(null);
+    }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        switch (msg.what) {
+            case Constant.MSG_OBTAIN_COMPLETE:
+                mCommentList = (List<Comment>) msg.obj;
+                mAdapter.setCommentList(mCommentList);
+                mListView.setAdapter(mAdapter);
+                mPage = 1;
+                break;
+            case Constant.MSG_OBTAIN_MORE_COMPLETE:
+                mPage++;
+                List<Comment> obj = (List<Comment>) msg.obj;
+                if (obj == null || obj.size() == 0) {
+                    Toast.makeText(getActivity(), "没有了", Toast.LENGTH_SHORT).show();
+                }
+                mCommentList.addAll(((List<Comment>) msg.obj));
+                mAdapter.setCommentList(mCommentList);
+                mAdapter.notifyDataSetChanged();
+                break;
+        }
+        return true;
     }
 }

@@ -10,13 +10,15 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
-import bjzhou.coolapk.app.R;
-import bjzhou.coolapk.app.model.Apk;
-import bjzhou.coolapk.app.ui.activities.AppViewActivity;
+
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import bjzhou.coolapk.app.R;
+import bjzhou.coolapk.app.model.Apk;
+import bjzhou.coolapk.app.ui.activities.AppViewActivity;
 
 /**
  * Created by bjzhou on 14-7-31.
@@ -39,7 +41,7 @@ public class ApkListAdapter extends RecyclerView.Adapter implements View.OnClick
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-        View convertView = mActivity.getLayoutInflater().inflate(R.layout.list_item_app, null);
+        View convertView = mActivity.getLayoutInflater().inflate(R.layout.list_item_app, viewGroup, false);
         return new ViewHolder(convertView);
     }
 

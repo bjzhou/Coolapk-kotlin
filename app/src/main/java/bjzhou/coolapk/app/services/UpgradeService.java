@@ -9,17 +9,20 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
+
+import java.util.List;
+
 import bjzhou.coolapk.app.http.ApkDownloader;
 import bjzhou.coolapk.app.http.HttpHelper;
 import bjzhou.coolapk.app.model.UpgradeApkExtend;
 
-import java.util.List;
-
 /**
  * Created by bjzhou on 14-8-15.
  */
-public class UpgradeService extends Service {
+public class UpgradeService extends Service implements Handler.Callback {
     private static final String TAG = "UpgradeService";
+
+    private Handler mHandler = new Handler(this);
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -36,36 +39,43 @@ public class UpgradeService extends Service {
             return;
         }
 
-        HttpHelper.getInstance(this).obtainUpgradeVersions(new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                List<UpgradeApkExtend> apks = (List<UpgradeApkExtend>) msg.obj;
-                if (apks != null && apks.size() > 0) {
-                    for (final UpgradeApkExtend apk : apks) {
-                        int id = (int) apk.getApk().getId();
-                        ApkDownloader.getInstance(UpgradeService.this).download(id, apk.getApk().getApkname(),
-                                apk.getTitle(), apk.getApk().getApkversionname(), new ApkDownloader.DownloadListener() {
-                                    @Override
-                                    public void onDownloading(int percent) {
-                                    }
+        HttpHelper.getInstance(this).obtainUpgradeVersions(mHandler);
+    }
 
-                                    @Override
-                                    public void onFailure(int errCode, String... err) {
-                                        Log.e(TAG, errCode + ":" + err[0]);
-                                    }
+    @Override
+    public boolean handleMessage(Message msg) {
+        List<UpgradeApkExtend> apks = (List<UpgradeApkExtend>) msg.obj;
+        if (apks != null && apks.size() > 0) {
+            for (final UpgradeApkExtend apk : apks) {
+                int id = (int) apk.getApk().getId();
+                ApkDownloader.getInstance(UpgradeService.this).download(id, apk.getApk().getApkname(),
+                        apk.getTitle(), apk.getApk().getApkversionname(), new ApkDownloader.DownloadListener() {
+                            @Override
+                            public void onDownloading(int percent) {
+                            }
 
-                                    @Override
-                                    public void onDownloaded() {
-                                    }
+                            @Override
+                            public void onFailure(int errCode, String... err) {
+                                Log.e(TAG, errCode + ":" + err[0]);
+                            }
 
-                                    @Override
-                                    public void onComplete() {
-                                        stopSelf();
-                                    }
-                                });
-                    }
-                }
+                            @Override
+                            public void onDownloaded() {
+                            }
+
+                            @Override
+                            public void onComplete() {
+                                stopSelf();
+                            }
+                        });
             }
-        });
+        }
+        return true;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mHandler.removeCallbacksAndMessages(null);
     }
 }

@@ -14,19 +14,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import bjzhou.coolapk.app.R;
 import bjzhou.coolapk.app.adapter.UpgradeAdapter;
 import bjzhou.coolapk.app.http.HttpHelper;
 import bjzhou.coolapk.app.model.UpgradeApkExtend;
 import bjzhou.coolapk.app.util.Constant;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by bjzhou on 14-8-13.
  */
-public class UpgradeFragment extends Fragment {
+public class UpgradeFragment extends Fragment implements Handler.Callback{
 
     public static final int INSTALL_REQUEST_CODE = 101;
     private static final String TAG = "UpgradeFragment";
@@ -34,20 +34,7 @@ public class UpgradeFragment extends Fragment {
     private UpgradeAdapter mAdapter;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private List<UpgradeApkExtend> mUpgradeList = new ArrayList<UpgradeApkExtend>();
-    private Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case Constant.MSG_OBTAIN_COMPLETE:
-                    mUpgradeList = (List<UpgradeApkExtend>) msg.obj;
-                    mAdapter.setUpgradeList(mUpgradeList);
-                    mRecyclerView.setAdapter(mAdapter);
-                    break;
-            }
-
-            mSwipeRefreshLayout.setRefreshing(false);
-        }
-    };
+    private Handler mHandler = new Handler(this);
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
 
@@ -60,7 +47,7 @@ public class UpgradeFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_upgrade, null);
+        View rootView = inflater.inflate(R.layout.fragment_upgrade, container, false);
 
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.apkList);
         mLayoutManager = new LinearLayoutManager(getActivity());
@@ -97,5 +84,25 @@ public class UpgradeFragment extends Fragment {
             Log.d(TAG, "resultCode:" + resultCode);
             HttpHelper.getInstance(getActivity()).obtainUpgradeVersions(mHandler);
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mHandler.removeCallbacksAndMessages(null);
+    }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        switch (msg.what) {
+            case Constant.MSG_OBTAIN_COMPLETE:
+                mUpgradeList = (List<UpgradeApkExtend>) msg.obj;
+                mAdapter.setUpgradeList(mUpgradeList);
+                mRecyclerView.setAdapter(mAdapter);
+                break;
+        }
+
+        mSwipeRefreshLayout.setRefreshing(false);
+        return true;
     }
 }

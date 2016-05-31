@@ -1,10 +1,10 @@
-package bjzhou.coolapk.app.adapter;
+package bjzhou.coolapk.app.ui.adapters;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -49,18 +49,23 @@ public class ApkListAdapter extends RecyclerView.Adapter implements View.OnClick
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int i) {
         ViewHolder holder = (ViewHolder) viewHolder;
         holder.titleView.setText(mApkList.get(i).getTitle());
-        holder.infoView.setText(mApkList.get(i).getInfo());
-        holder.downnumView.setText(mApkList.get(i).getDownnum() + "");
-        holder.logoView.setTag(mApkList.get(i).getTitle());
-        Bitmap bitmap = mApkList.get(i).getLogoBitmap();
-        if (bitmap != null) {
-            holder.logoView.setImageBitmap(bitmap);
-        } else {
-            Picasso.with(mActivity)
-                    .load(mApkList.get(i).getLogo())
-                    .placeholder(R.drawable.ic_default_thumbnail)
-                    .into(holder.logoView);
+        if (mApkList.get(i).getInfo() == null) {
+            String apk_info = "<font color=\"#ff35a1d4\">" + mApkList.get(i).getApkversionname() + "</font>";
+            apk_info += "<font color=\"black\">, " + mApkList.get(i).getApksize() + ", </font>";
+            if (mApkList.get(i).getUpdateFlag().equals("new")) {
+                apk_info += "<font color=\"red\">New</font>";
+            } else {
+                apk_info += "<font color=\"black\">Update</font>";
+            }
+            mApkList.get(i).setInfo(Html.fromHtml(apk_info));
         }
+        holder.infoView.setText(mApkList.get(i).getInfo());
+        holder.downnumView.setText(String.valueOf(mApkList.get(i).getDownnum()));
+        holder.logoView.setTag(mApkList.get(i).getTitle());
+        Picasso.with(mActivity)
+                .load(mApkList.get(i).getLogo())
+                .placeholder(R.drawable.ic_default_thumbnail)
+                .into(holder.logoView);
         holder.ratingBar.setRating(mApkList.get(i).getScore());
     }
 

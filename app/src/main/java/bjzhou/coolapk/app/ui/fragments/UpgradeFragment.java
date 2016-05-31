@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import bjzhou.coolapk.app.R;
-import bjzhou.coolapk.app.adapter.UpgradeAdapter;
+import bjzhou.coolapk.app.ui.adapters.UpgradeAdapter;
 import bjzhou.coolapk.app.http.HttpHelper;
 import bjzhou.coolapk.app.model.UpgradeApkExtend;
 import bjzhou.coolapk.app.util.Constant;
@@ -63,7 +63,7 @@ public class UpgradeFragment extends Fragment implements Handler.Callback{
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                HttpHelper.getInstance(getActivity()).obtainUpgradeVersions(mHandler);
+                HttpHelper.getInstance(getActivity()).obtainUpgradeVersions(getActivity(), mHandler);
             }
         });
         return rootView;
@@ -74,7 +74,7 @@ public class UpgradeFragment extends Fragment implements Handler.Callback{
         super.onViewCreated(view, savedInstanceState);
 
 
-        HttpHelper.getInstance(getActivity()).obtainUpgradeVersions(mHandler);
+        HttpHelper.getInstance(getActivity()).obtainUpgradeVersions(getActivity(), mHandler);
         mSwipeRefreshLayout.setRefreshing(true);
     }
 
@@ -82,7 +82,7 @@ public class UpgradeFragment extends Fragment implements Handler.Callback{
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == INSTALL_REQUEST_CODE) {
             Log.d(TAG, "resultCode:" + resultCode);
-            HttpHelper.getInstance(getActivity()).obtainUpgradeVersions(mHandler);
+            HttpHelper.getInstance(getActivity()).obtainUpgradeVersions(getActivity(), mHandler);
         }
     }
 

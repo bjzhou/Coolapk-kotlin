@@ -39,7 +39,7 @@ public class UpgradeService extends Service implements Handler.Callback {
             return;
         }
 
-        HttpHelper.getInstance(this).obtainUpgradeVersions(mHandler);
+        HttpHelper.getInstance(this).obtainUpgradeVersions(this, mHandler);
     }
 
     @Override

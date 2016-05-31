@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import bjzhou.coolapk.app.R;
-import bjzhou.coolapk.app.adapter.CommentAdapter;
+import bjzhou.coolapk.app.ui.adapters.CommentAdapter;
 import bjzhou.coolapk.app.http.HttpHelper;
 import bjzhou.coolapk.app.model.Comment;
 import bjzhou.coolapk.app.util.Constant;

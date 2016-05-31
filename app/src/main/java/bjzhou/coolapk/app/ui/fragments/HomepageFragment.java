@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import bjzhou.coolapk.app.R;
-import bjzhou.coolapk.app.adapter.ApkListAdapter;
+import bjzhou.coolapk.app.ui.adapters.ApkListAdapter;
 import bjzhou.coolapk.app.http.HttpHelper;
 import bjzhou.coolapk.app.model.Apk;
 import bjzhou.coolapk.app.util.Constant;

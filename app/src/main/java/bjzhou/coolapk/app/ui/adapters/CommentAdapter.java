@@ -1,4 +1,4 @@
-package bjzhou.coolapk.app.adapter;
+package bjzhou.coolapk.app.ui.adapters;
 
 import android.support.v4.app.FragmentActivity;
 import android.text.Html;

@@ -5,9 +5,9 @@ Coolapk
 
 ### TODO
 
-* okhttp/Retrofit
 * 分类
 * 排行
+* UI
 
 ### 截图
 

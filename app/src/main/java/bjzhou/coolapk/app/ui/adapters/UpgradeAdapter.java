@@ -1,4 +1,4 @@
-package bjzhou.coolapk.app.adapter;
+package bjzhou.coolapk.app.ui.adapters;
 
 import android.content.Intent;
 import android.net.Uri;

@@ -8,7 +8,7 @@ public class Constant {
     public static final String API_KEY = "5b90704e1db879af6f5ee08ec1e8f2a5";
     public static final String COOLAPK_DID = "d41d8cd98f00b204e9800998ecf8427e";
 
-    public static final String COOLAPK_PREURL = "http://api.coolapk.com/market/v2/api.php?apikey=%s";
+    public static final String COOLAPK_PREURL = "http://api.coolapk.com/market/v2/";
     public static final String METHOD_GET_HOMEPAGE_APKLIST = "&method=getHomepageApkList&p=%d&slm=1";
     public static final String METHOD_GET_APK_FIELD = "&method=getApkField&id=%d&includeMeta=0&slm=1";
     public static final String METHOD_GET_SEARCH_APKLIST = "&method=getSearchApkList&q=%s&p=%d&slm=1";

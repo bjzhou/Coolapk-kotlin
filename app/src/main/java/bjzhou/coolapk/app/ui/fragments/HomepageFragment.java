@@ -23,6 +23,7 @@ import bjzhou.coolapk.app.ui.adapters.ApkListAdapter;
 import bjzhou.coolapk.app.http.HttpHelper;
 import bjzhou.coolapk.app.model.Apk;
 import bjzhou.coolapk.app.util.Constant;
+import bjzhou.coolapk.app.widget.LoadMoreDecoration;
 
 /**
  * Created by bjzhou on 14-7-29.
@@ -49,6 +50,7 @@ public class HomepageFragment extends Fragment implements Handler.Callback {
     private int previousTotal;
     private int visibleThreshold = 5;
     private int mInsets;
+    private LoadMoreDecoration mLoadMoreDecoration;
 
     public HomepageFragment() {
     }
@@ -93,40 +95,24 @@ public class HomepageFragment extends Fragment implements Handler.Callback {
                 outRect.set(mInsets,mInsets,mInsets,mInsets);
             }
         });
+        mLoadMoreDecoration = new LoadMoreDecoration();
+        mLoadMoreDecoration.setListener(new LoadMoreDecoration.Listener() {
+            @Override
+            public void onLoadMore() {
+                obtainApkList(mPage + 1);
+            }
+        });
+        mRecyclerView.addItemDecoration(mLoadMoreDecoration);
 
         mAdapter = new ApkListAdapter(getActivity(), mRecyclerView);
         mRecyclerView.setAdapter(mAdapter);
-
-        mRecyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-
-                visibleItemCount = mRecyclerView.getChildCount();
-                totalItemCount = mLayoutManager.getItemCount();
-                firstVisibleItem = mLayoutManager.findFirstVisibleItemPosition();
-
-                if (loading) {
-                    if (totalItemCount > previousTotal) {
-                        loading = false;
-                        previousTotal = totalItemCount;
-                    }
-                }
-                if (!loading
-                        && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
-                    // End has been reached
-                    mSwipeRefreshLayout.setRefreshing(true);
-                    obtainApkList(mPage + 1);
-                    loading = true;
-                }
-            }
-        });
         
         mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefresh);
         mSwipeRefreshLayout.setColorSchemeResources(R.color.theme_default_primary);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                mLoadMoreDecoration.reset();
                 obtainApkList(1);
             }
         });
@@ -169,7 +155,8 @@ public class HomepageFragment extends Fragment implements Handler.Callback {
                 mPage++;
                 List<Apk> obj = (List<Apk>) msg.obj;
                 if (obj == null || obj.size() == 0) {
-                    Toast.makeText(getActivity(), "没有了", Toast.LENGTH_SHORT).show();
+                    mLoadMoreDecoration.loadComplete();
+                    return true;
                 }
                 mApkList.addAll(((List<Apk>) msg.obj));
                 mAdapter.setApkList(mApkList);

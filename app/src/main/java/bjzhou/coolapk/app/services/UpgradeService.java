@@ -9,6 +9,7 @@ import android.os.Message;
 import android.util.Log;
 
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import bjzhou.coolapk.app.http.ApkDownloader;
 import bjzhou.coolapk.app.http.HttpHelper;
@@ -22,9 +23,12 @@ public class UpgradeService extends JobService implements Handler.Callback {
     private static final String TAG = "UpgradeService";
 
     private Handler mHandler = new Handler(this);
+    private CopyOnWriteArrayList<Integer> mCompleteIds;
+    private JobParameters mParams;
 
     @Override
     public boolean onStartJob(JobParameters params) {
+        mParams = params;
         HttpHelper.getInstance(this).obtainUpgradeVersions(this, mHandler);
         return false;
     }
@@ -37,10 +41,10 @@ public class UpgradeService extends JobService implements Handler.Callback {
 
     @Override
     public boolean handleMessage(Message msg) {
-        List<UpgradeApkExtend> apks = (List<UpgradeApkExtend>) msg.obj;
+        final List<UpgradeApkExtend> apks = (List<UpgradeApkExtend>) msg.obj;
         if (apks != null && apks.size() > 0) {
             for (final UpgradeApkExtend apk : apks) {
-                int id = (int) apk.getApk().getId();
+                final int id = (int) apk.getApk().getId();
                 ApkDownloader.getInstance(UpgradeService.this).download(id, apk.getApk().getApkname(),
                         apk.getTitle(), apk.getApk().getApkversionname(), new ApkDownloader.DownloadListener() {
                             @Override
@@ -58,7 +62,10 @@ public class UpgradeService extends JobService implements Handler.Callback {
 
                             @Override
                             public void onComplete() {
-                                jobFinished(null, false);
+                                mCompleteIds.add(id);
+                                if (mCompleteIds.size() >= apks.size()) {
+                                    jobFinished(mParams, false);
+                                }
                             }
                         });
             }

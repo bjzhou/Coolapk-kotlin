@@ -7,12 +7,15 @@ import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.os.Build;
 
+import bjzhou.coolapk.app.BuildConfig;
 import bjzhou.coolapk.app.services.UpgradeService;
 
 /**
  * Created by bjzhou on 14-7-29.
  */
 public class CoolapkApp extends Application {
+
+    private static final long SCHEDULE_INTERVAL = BuildConfig.DEBUG ? 10 * 1000 : 60 * 60 * 1000;
 
     @Override
     public void onCreate() {
@@ -28,7 +31,7 @@ public class CoolapkApp extends Application {
         JobScheduler jobScheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
         jobScheduler.schedule(new JobInfo.Builder(0, new ComponentName(this, UpgradeService.class))
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
-                .setPeriodic(60 * 60 * 1000)
+                .setPeriodic(SCHEDULE_INTERVAL)
                 .setPersisted(true)
                 .build());
     }

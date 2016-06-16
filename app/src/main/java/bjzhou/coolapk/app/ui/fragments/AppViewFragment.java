@@ -193,6 +193,7 @@ public class AppViewFragment extends Fragment implements View.OnClickListener, H
 
     @Override
     public boolean handleMessage(Message msg) {
+        if (getActivity() == null) return true;
         mField = (ApkField) msg.obj;
         Picasso.with(getActivity())
                 .load(mField.getMeta().getLogo())

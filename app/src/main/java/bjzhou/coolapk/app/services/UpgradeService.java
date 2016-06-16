@@ -1,12 +1,10 @@
 package bjzhou.coolapk.app.services;
 
-import android.app.Service;
-import android.content.Context;
-import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.annotation.TargetApi;
+import android.app.job.JobParameters;
+import android.app.job.JobService;
+import android.os.Build;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
 
@@ -19,27 +17,22 @@ import bjzhou.coolapk.app.model.UpgradeApkExtend;
 /**
  * Created by bjzhou on 14-8-15.
  */
-public class UpgradeService extends Service implements Handler.Callback {
+@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+public class UpgradeService extends JobService implements Handler.Callback {
     private static final String TAG = "UpgradeService";
 
     private Handler mHandler = new Handler(this);
 
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+    public boolean onStartJob(JobParameters params) {
+        HttpHelper.getInstance(this).obtainUpgradeVersions(this, mHandler);
+        return false;
     }
 
     @Override
-    public void onCreate() {
-
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo.State state = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState();
-        if (state != NetworkInfo.State.CONNECTED) {
-            stopSelf();
-            return;
-        }
-
-        HttpHelper.getInstance(this).obtainUpgradeVersions(this, mHandler);
+    public boolean onStopJob(JobParameters params) {
+        mHandler.removeCallbacksAndMessages(null);
+        return false;
     }
 
     @Override
@@ -65,17 +58,11 @@ public class UpgradeService extends Service implements Handler.Callback {
 
                             @Override
                             public void onComplete() {
-                                stopSelf();
+                                jobFinished(null, false);
                             }
                         });
             }
         }
         return true;
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mHandler.removeCallbacksAndMessages(null);
     }
 }

@@ -78,7 +78,7 @@ public class ApkDownloader {
         }
 
         final String name = getDownloadName(packageName, appVersion);
-        final String filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        final String filePath = mContext.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
                 + File.separator + name;
 
         final Handler handler = new Handler();
@@ -100,7 +100,7 @@ public class ApkDownloader {
                 //Log.d(TAG, url);
 
                 DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-                request.setDestinationInExternalPublicDir(Constant.DOWNLOAD_DIR, name);
+                request.setDestinationInExternalFilesDir(mContext, Environment.DIRECTORY_DOWNLOADS, name);
                 request.setMimeType("application/vnd.android.package-archive");
                 request.addRequestHeader("Cookie", "coolapk_did=" + Constant.COOLAPK_DID);
                 long downloadId = downloadManager.enqueue(request);
@@ -140,11 +140,11 @@ public class ApkDownloader {
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                downloadingIds.get(id).onFailure(DownloadListener.DOWNLOAD_FAIL);
+                                downloadingIds.get(id).onFailure(DownloadListener.DOWNLOAD_FAIL, "Download Failed");
+                                downloadingIds.remove(id);
                             }
                         });
                         downloading = false;
-                        downloadingIds.remove(id);
                     }
 
                     cursor.close();

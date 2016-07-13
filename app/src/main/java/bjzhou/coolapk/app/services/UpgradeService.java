@@ -6,6 +6,7 @@ import android.app.job.JobService;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
+import android.os.PowerManager;
 import android.util.Log;
 
 import java.util.List;
@@ -28,7 +29,12 @@ public class UpgradeService extends JobService implements Handler.Callback {
     @Override
     public boolean onStartJob(JobParameters params) {
         mParams = params;
-        HttpHelper.getInstance(this).obtainUpgradeVersions(this, mHandler);
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        if (!powerManager.isInteractive()) {
+            jobFinished(params, false);
+        } else {
+            HttpHelper.getInstance(this).obtainUpgradeVersions(this, mHandler);
+        }
         return false;
     }
 

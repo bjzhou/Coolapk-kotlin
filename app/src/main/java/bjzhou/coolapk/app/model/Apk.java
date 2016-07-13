@@ -45,6 +45,15 @@ public class Apk {
     private int commentCount;
     private Spanned info;
     private Bitmap logoBitmap;
+    private String changelog;
+
+    public String getChangelog() {
+        return changelog;
+    }
+
+    public void setChangelog(String changelog) {
+        this.changelog = changelog;
+    }
 
     public int getId() {
         return id;

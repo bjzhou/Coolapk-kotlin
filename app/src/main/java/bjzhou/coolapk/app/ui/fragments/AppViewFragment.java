@@ -163,8 +163,7 @@ public class AppViewFragment extends Fragment implements View.OnClickListener, H
             }
 
             //mDownloadButton.setText("正在准备下载");
-            ApkDownloader.getInstance(getActivity()).download(mId, mField.getMeta().getApkname(),
-                    mField.getMeta().getTitle(), mField.getMeta().getApkversionname(), downloadListener);
+            ApkDownloader.getInstance(getActivity()).download(mField.getMeta(), downloadListener);
 
         } else {
 

@@ -17,7 +17,6 @@ import java.util.List;
 import bjzhou.coolapk.app.model.Apk;
 import bjzhou.coolapk.app.model.ApkField;
 import bjzhou.coolapk.app.model.Comment;
-import bjzhou.coolapk.app.model.UpgradeApk;
 import bjzhou.coolapk.app.model.UpgradeApkExtend;
 import bjzhou.coolapk.app.util.Constant;
 import okhttp3.HttpUrl;
@@ -181,12 +180,12 @@ public class HttpHelper {
                         sb.append(info.packageName).append(",");
                     }
                 }
-                mService.obtainUpgradeVersions(sb.substring(0, sb.length() - 1)).enqueue(new Callback<List<UpgradeApk>>() {
+                mService.obtainUpgradeVersions(sb.substring(0, sb.length() - 1)).enqueue(new Callback<List<Apk>>() {
                     @Override
-                    public void onResponse(Call<List<UpgradeApk>> call, retrofit2.Response<List<UpgradeApk>> response) {
+                    public void onResponse(Call<List<Apk>> call, retrofit2.Response<List<Apk>> response) {
                         Message msg = new Message();
                         List<UpgradeApkExtend> updateList = new ArrayList<UpgradeApkExtend>();
-                        for (UpgradeApk apk : response.body()) {
+                        for (Apk apk : response.body()) {
                             try {
                                 PackageInfo pi = pm.getPackageInfo(apk.getApkname(), 0);
                                 if (apk.getApkversioncode() > pi.versionCode) {
@@ -210,7 +209,7 @@ public class HttpHelper {
                     }
 
                     @Override
-                    public void onFailure(Call<List<UpgradeApk>> call, Throwable t) {
+                    public void onFailure(Call<List<Apk>> call, Throwable t) {
                         Message msg = new Message();
                         msg.what = Constant.MSG_OBTAIN_FAILED;
                         handler.sendMessage(msg);

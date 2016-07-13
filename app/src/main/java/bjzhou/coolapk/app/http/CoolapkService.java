@@ -5,7 +5,6 @@ import java.util.List;
 import bjzhou.coolapk.app.model.Apk;
 import bjzhou.coolapk.app.model.ApkField;
 import bjzhou.coolapk.app.model.Comment;
-import bjzhou.coolapk.app.model.UpgradeApk;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -33,5 +32,5 @@ interface CoolapkService {
 
     @Headers("Content-Type: application/x-www-form-urlencoded")
     @POST("api.php?method=getUpgradeVersions")
-    Call<List<UpgradeApk>> obtainUpgradeVersions(@Body String postStr);
+    Call<List<Apk>> obtainUpgradeVersions(@Body String postStr);
 }

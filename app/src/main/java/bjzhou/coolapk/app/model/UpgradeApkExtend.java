@@ -10,13 +10,13 @@ public class UpgradeApkExtend {
     private String title;
     private Drawable logo;
     private Spanned info;
-    private UpgradeApk apk;
+    private Apk apk;
 
-    public UpgradeApk getApk() {
+    public Apk getApk() {
         return apk;
     }
 
-    public void setApk(UpgradeApk apk) {
+    public void setApk(Apk apk) {
         this.apk = apk;
     }
 

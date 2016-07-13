@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 import bjzhou.coolapk.app.R;
+import bjzhou.coolapk.app.model.Apk;
+import bjzhou.coolapk.app.ui.activities.NavActivity;
 import bjzhou.coolapk.app.ui.base.BaseActivity;
 import bjzhou.coolapk.app.util.Constant;
 import bjzhou.coolapk.app.util.StringHelper;
@@ -37,10 +39,12 @@ public class ApkDownloader {
 
     private Map<Integer, DownloadListener> downloadingIds = new HashMap<>();
     private boolean mPermissionGranted = false;
+    private NotificationManager nm;
 
     private ApkDownloader(Context context) {
         mContext = context;
         downloadManager = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
+        nm = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
     public static ApkDownloader getInstance(Context context) {
@@ -64,7 +68,7 @@ public class ApkDownloader {
         return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnectedOrConnecting();
     }
 
-    public void download(final int id, String packageName, final String appName, String appVersion, final DownloadListener _listener) {
+    public void download(final Apk apk, final DownloadListener _listener) {
         if (!checkNetworkState(mContext)) {
             return;
         }
@@ -73,11 +77,11 @@ public class ApkDownloader {
             return;
         }
 
-        if (downloadingIds.containsKey(id)) {
+        if (downloadingIds.containsKey(apk.getId())) {
             return;
         }
 
-        final String name = getDownloadName(packageName, appVersion);
+        final String name = getDownloadName(apk.getApkname(), apk.getApkversionname());
         final String filePath = mContext.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
                 + File.separator + name;
 
@@ -87,15 +91,15 @@ public class ApkDownloader {
             @Override
             public void run() {
 
-                downloadingIds.put(id, _listener);
+                downloadingIds.put(apk.getId(), _listener);
 
                 PackageInfo pi = mContext.getPackageManager().getPackageArchiveInfo(filePath, 0);
                 if (new File(filePath).exists() && (pi != null)) {
-                    installInternal(id, filePath, appName, handler);
+                    installInternal(apk, filePath, handler);
                     return;
                 }
 
-                String sid = StringHelper.getVStr("APK", StringHelper.getN27(id), Constant.APP_COOKIE_KEY, 6).trim();
+                String sid = StringHelper.getVStr("APK", StringHelper.getN27(apk.getId()), Constant.APP_COOKIE_KEY, 6).trim();
                 String url = String.format(Constant.COOLAPK_PREURL + Constant.METHOD_ON_DOWNLOAD_APK, Constant.API_KEY, sid);
                 //Log.d(TAG, url);
 
@@ -121,7 +125,7 @@ public class ApkDownloader {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            downloadingIds.get(id).onDownloading(dl_progress);
+                            downloadingIds.get(apk.getId()).onDownloading(dl_progress);
                         }
                     });
 
@@ -129,19 +133,19 @@ public class ApkDownloader {
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                downloadingIds.get(id).onDownloaded();
+                                downloadingIds.get(apk.getId()).onDownloaded();
                             }
                         });
                         downloading = false;
-                        installInternal(id, filePath, appName, handler);
+                        installInternal(apk, filePath, handler);
                     }
 
                     if (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)) == DownloadManager.STATUS_FAILED) {
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                downloadingIds.get(id).onFailure(DownloadListener.DOWNLOAD_FAIL, "Download Failed");
-                                downloadingIds.remove(id);
+                                downloadingIds.get(apk.getId()).onFailure(DownloadListener.DOWNLOAD_FAIL, "Download Failed");
+                                downloadingIds.remove(apk.getId());
                             }
                         });
                         downloading = false;
@@ -158,16 +162,18 @@ public class ApkDownloader {
         return packageName + "_" + appVersion + ".apk";
     }
 
-    private void installInternal(final int id, final String filePath, final String appName, Handler handler) {
-        if (downloadingIds.get(id) == null) return;
+    private void installInternal(final Apk apk, final String filePath, Handler handler) {
+        if (downloadingIds.get(apk.getId()) == null) return;
+        showNotification(apk, false);
         final List<String> result = Shell.SU.run("pm install -r " + filePath);
         if (result == null || result.size() == 0) {
+            nm.cancel(apk.getTitle().hashCode());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
                     installInternal2(filePath);
-                    downloadingIds.get(id).onFailure(DownloadListener.INSTALL_FAIL, "root problem", filePath);
-                    downloadingIds.remove(id);
+                    downloadingIds.get(apk.getId()).onFailure(DownloadListener.INSTALL_FAIL, "root problem", filePath);
+                    downloadingIds.remove(apk.getId());
                 }
             });
 
@@ -176,19 +182,20 @@ public class ApkDownloader {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    showNotification(appName);
-                    downloadingIds.get(id).onComplete();
-                    downloadingIds.remove(id);
+                    showNotification(apk, true);
+                    downloadingIds.get(apk.getId()).onComplete();
+                    downloadingIds.remove(apk.getId());
                 }
             });
 
         } else {
+            nm.cancel(apk.getTitle().hashCode());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
                     installInternal2(filePath);
-                    downloadingIds.get(id).onFailure(DownloadListener.INSTALL_FAIL, result.get(0), filePath);
-                    downloadingIds.remove(id);
+                    downloadingIds.get(apk.getId()).onFailure(DownloadListener.INSTALL_FAIL, result.get(0), filePath);
+                    downloadingIds.remove(apk.getId());
                 }
             });
         }
@@ -209,16 +216,17 @@ public class ApkDownloader {
         downloadingIds.put(id, listener);
     }
 
-    public void showNotification(String title) {
-        NotificationManager nm = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
-        PendingIntent pi = PendingIntent.getActivity(mContext, 0, new Intent(), 0);
+    public void showNotification(Apk apk, boolean complete) {
+        Intent intent = complete ? mContext.getPackageManager().getLaunchIntentForPackage(apk.getApkname()) : new Intent(mContext, NavActivity.class);
+        if (intent == null) intent = new Intent();
+        PendingIntent pi = PendingIntent.getActivity(mContext, 0, intent, 0);
         Notification.Builder builder = new Notification.Builder(mContext);
-        builder.setContentTitle(title + "安装成功");
-        builder.setContentText(title + "安装成功");
+        builder.setContentTitle(apk.getTitle() + (complete ? "安装成功" : "正在安装"));
+        builder.setContentText(apk.getTitle() + (complete ? "安装成功" : "正在安装"));
         builder.setContentIntent(pi);
-        builder.setSmallIcon(R.drawable.ic_stat_ok);
+        builder.setSmallIcon(complete ? R.drawable.ic_stat_ok : R.drawable.ic_stat_install);
         Notification notification = builder.getNotification();
-        nm.notify(title.hashCode(), notification);
+        nm.notify(apk.getTitle().hashCode(), notification);
     }
 
     public interface DownloadListener {

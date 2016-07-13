@@ -9,7 +9,6 @@ import android.os.Message;
 import android.util.Log;
 
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import bjzhou.coolapk.app.http.ApkDownloader;
 import bjzhou.coolapk.app.http.HttpHelper;
@@ -23,8 +22,8 @@ public class UpgradeService extends JobService implements Handler.Callback {
     private static final String TAG = "UpgradeService";
 
     private Handler mHandler = new Handler(this);
-    private CopyOnWriteArrayList<Integer> mCompleteIds;
     private JobParameters mParams;
+    private int mCompleteCount = 0;
 
     @Override
     public boolean onStartJob(JobParameters params) {
@@ -44,9 +43,7 @@ public class UpgradeService extends JobService implements Handler.Callback {
         final List<UpgradeApkExtend> apks = (List<UpgradeApkExtend>) msg.obj;
         if (apks != null && apks.size() > 0) {
             for (final UpgradeApkExtend apk : apks) {
-                final int id = (int) apk.getApk().getId();
-                ApkDownloader.getInstance(UpgradeService.this).download(id, apk.getApk().getApkname(),
-                        apk.getTitle(), apk.getApk().getApkversionname(), new ApkDownloader.DownloadListener() {
+                ApkDownloader.getInstance(UpgradeService.this).download(apk.getApk(), new ApkDownloader.DownloadListener() {
                             @Override
                             public void onDownloading(int percent) {
                             }
@@ -54,6 +51,10 @@ public class UpgradeService extends JobService implements Handler.Callback {
                             @Override
                             public void onFailure(int errCode, String... err) {
                                 Log.e(TAG, errCode + ":" + err[0]);
+                                mCompleteCount++;
+                                if (mCompleteCount >= apks.size()) {
+                                    jobFinished(mParams, false);
+                                }
                             }
 
                             @Override
@@ -62,8 +63,8 @@ public class UpgradeService extends JobService implements Handler.Callback {
 
                             @Override
                             public void onComplete() {
-                                mCompleteIds.add(id);
-                                if (mCompleteIds.size() >= apks.size()) {
+                                mCompleteCount++;
+                                if (mCompleteCount >= apks.size()) {
                                     jobFinished(mParams, false);
                                 }
                             }

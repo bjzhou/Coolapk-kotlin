@@ -110,9 +110,7 @@ public class UpgradeAdapter extends RecyclerView.Adapter {
 
     private void downloadAndInstall(final Button button, final UpgradeApkExtend apkExtend) {
         button.setText("正在准备下载");
-        int id = (int) apkExtend.getApk().getId();
-        ApkDownloader.getInstance(mActivity).download(id, apkExtend.getApk().getApkname(), apkExtend.getTitle(),
-                apkExtend.getApk().getApkversionname(), new ApkDownloader.DownloadListener() {
+        ApkDownloader.getInstance(mActivity).download(apkExtend.getApk(), new ApkDownloader.DownloadListener() {
                     @Override
                     public void onDownloading(int percent) {
                         button.setText(percent + "%");

@@ -98,7 +98,7 @@ public class CommentAdapter extends BaseExpandableListAdapter {
                 .load(mCommentList.get(groupPosition).getUseravatar())
                 .placeholder(R.drawable.ic_default_avatar)
                 .into(holder.userIconView);
-        //holder.userIconView.setImageUrl(mCommentList.get(position).getUseravatar(), HttpHelper.getInstance(mActivity).getImageLoader());
+        //holder.userIconView.setImageUrl(mCommentList.get(position).getUseravatar(), ApiManager.getInstance(mActivity).getImageLoader());
         String title = mCommentList.get(groupPosition).getTitle();
         title = title.split("来自")[0];
         holder.titleView.setText(title);

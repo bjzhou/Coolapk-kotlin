@@ -1,82 +1,62 @@
 package bjzhou.coolapk.app.services;
 
-import android.annotation.TargetApi;
-import android.app.job.JobParameters;
-import android.app.job.JobService;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Message;
-import android.os.PowerManager;
-import android.util.Log;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.Intent;
+import android.os.IBinder;
+import android.support.annotation.Nullable;
 
 import java.util.List;
 
-import bjzhou.coolapk.app.http.ApkDownloader;
-import bjzhou.coolapk.app.http.HttpHelper;
 import bjzhou.coolapk.app.model.UpgradeApkExtend;
+import bjzhou.coolapk.app.net.ApiManager;
+import bjzhou.coolapk.app.net.ApkDownloader;
+import io.reactivex.functions.Consumer;
 
 /**
  * Created by bjzhou on 14-8-15.
  */
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-public class UpgradeService extends JobService implements Handler.Callback {
+public class UpgradeService extends Service {
     private static final String TAG = "UpgradeService";
+    private static final long SCAN_INTERVAL = 24 * 60 * 60 * 1000;
 
-    private Handler mHandler = new Handler(this);
-    private JobParameters mParams;
-    private int mCompleteCount = 0;
+    private final static String ACTION_UPGRADE_SILENT = "bjzhou.coolapk.app.action.upgrade_silent";
 
     @Override
-    public boolean onStartJob(JobParameters params) {
-        mParams = params;
-        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        if (!powerManager.isInteractive()) {
-            jobFinished(params, false);
-        } else {
-            HttpHelper.getInstance(this).obtainUpgradeVersions(this, mHandler);
-        }
-        return false;
+    public void onCreate() {
+        super.onCreate();
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        Intent startSelf = new Intent(this, UpgradeService.class);
+        startSelf.setAction(ACTION_UPGRADE_SILENT);
+        PendingIntent pi = PendingIntent.getService(this, 0, startSelf,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        alarmManager.cancel(pi);
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
+                System.currentTimeMillis() + 500, SCAN_INTERVAL, pi);
     }
 
     @Override
-    public boolean onStopJob(JobParameters params) {
-        mHandler.removeCallbacksAndMessages(null);
-        return false;
-    }
-
-    @Override
-    public boolean handleMessage(Message msg) {
-        final List<UpgradeApkExtend> apks = (List<UpgradeApkExtend>) msg.obj;
-        if (apks != null && apks.size() > 0) {
-            for (final UpgradeApkExtend apk : apks) {
-                ApkDownloader.getInstance(UpgradeService.this).download(apk.getApk(), new ApkDownloader.DownloadListener() {
-                            @Override
-                            public void onDownloading(int percent) {
-                            }
-
-                            @Override
-                            public void onFailure(int errCode, String... err) {
-                                Log.e(TAG, errCode + ":" + err[0]);
-                                mCompleteCount++;
-                                if (mCompleteCount >= apks.size()) {
-                                    jobFinished(mParams, false);
-                                }
-                            }
-
-                            @Override
-                            public void onDownloaded() {
-                            }
-
-                            @Override
-                            public void onComplete() {
-                                mCompleteCount++;
-                                if (mCompleteCount >= apks.size()) {
-                                    jobFinished(mParams, false);
-                                }
-                            }
-                        });
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        String action = intent.getAction();
+        if (ACTION_UPGRADE_SILENT.equals(action)) {
+            if (ApiManager.isWifiConnected(this)) {
+                ApiManager.getInstance().obtainUpgradeVersions(this).subscribe(new Consumer<List<UpgradeApkExtend>>() {
+                    @Override
+                    public void accept(List<UpgradeApkExtend> upgradeApkExtends) throws Exception {
+                        for (UpgradeApkExtend upgradeApkExtend : upgradeApkExtends) {
+                            ApkDownloader.getInstance().downloadAndInstall(UpgradeService.this, upgradeApkExtend.getApk(), null);
+                        }
+                    }
+                });
             }
         }
-        return true;
+        return START_STICKY;
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 }

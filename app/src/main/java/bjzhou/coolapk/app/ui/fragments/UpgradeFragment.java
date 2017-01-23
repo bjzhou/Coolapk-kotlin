@@ -2,8 +2,6 @@ package bjzhou.coolapk.app.ui.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -18,15 +16,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import bjzhou.coolapk.app.R;
-import bjzhou.coolapk.app.ui.adapters.UpgradeAdapter;
-import bjzhou.coolapk.app.http.HttpHelper;
 import bjzhou.coolapk.app.model.UpgradeApkExtend;
-import bjzhou.coolapk.app.util.Constant;
+import bjzhou.coolapk.app.net.ApiManager;
+import bjzhou.coolapk.app.ui.adapters.UpgradeAdapter;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
 
 /**
  * Created by bjzhou on 14-8-13.
  */
-public class UpgradeFragment extends Fragment implements Handler.Callback{
+public class UpgradeFragment extends Fragment {
 
     public static final int INSTALL_REQUEST_CODE = 101;
     private static final String TAG = "UpgradeFragment";
@@ -34,7 +33,6 @@ public class UpgradeFragment extends Fragment implements Handler.Callback{
     private UpgradeAdapter mAdapter;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private List<UpgradeApkExtend> mUpgradeList = new ArrayList<UpgradeApkExtend>();
-    private Handler mHandler = new Handler(this);
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
 
@@ -54,7 +52,7 @@ public class UpgradeFragment extends Fragment implements Handler.Callback{
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
-        mAdapter = new UpgradeAdapter(getActivity(), mRecyclerView);
+        mAdapter = new UpgradeAdapter(getActivity());
         mAdapter.setUpgradeList(mUpgradeList);
         mRecyclerView.setAdapter(mAdapter);
 
@@ -63,18 +61,32 @@ public class UpgradeFragment extends Fragment implements Handler.Callback{
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                HttpHelper.getInstance(getActivity()).obtainUpgradeVersions(getActivity(), mHandler);
+                obtainUpgradeVersions();
             }
         });
         return rootView;
     }
 
+    private void obtainUpgradeVersions() {
+        ApiManager.getInstance().obtainUpgradeVersions(getActivity()).doFinally(new Action() {
+            @Override
+            public void run() throws Exception {
+                mSwipeRefreshLayout.setRefreshing(false);
+            }
+        }).subscribe(new Consumer<List<UpgradeApkExtend>>() {
+            @Override
+            public void accept(List<UpgradeApkExtend> upgradeApkExtends) throws Exception {
+                mUpgradeList = upgradeApkExtends;
+                mAdapter.setUpgradeList(mUpgradeList);
+                mRecyclerView.setAdapter(mAdapter);
+            }
+        });
+    }
+
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-
-        HttpHelper.getInstance(getActivity()).obtainUpgradeVersions(getActivity(), mHandler);
+        obtainUpgradeVersions();
         mSwipeRefreshLayout.setRefreshing(true);
     }
 
@@ -82,27 +94,7 @@ public class UpgradeFragment extends Fragment implements Handler.Callback{
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == INSTALL_REQUEST_CODE) {
             Log.d(TAG, "resultCode:" + resultCode);
-            HttpHelper.getInstance(getActivity()).obtainUpgradeVersions(getActivity(), mHandler);
+            obtainUpgradeVersions();
         }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mHandler.removeCallbacksAndMessages(null);
-    }
-
-    @Override
-    public boolean handleMessage(Message msg) {
-        switch (msg.what) {
-            case Constant.MSG_OBTAIN_COMPLETE:
-                mUpgradeList = (List<UpgradeApkExtend>) msg.obj;
-                mAdapter.setUpgradeList(mUpgradeList);
-                mRecyclerView.setAdapter(mAdapter);
-                break;
-        }
-
-        mSwipeRefreshLayout.setRefreshing(false);
-        return true;
     }
 }

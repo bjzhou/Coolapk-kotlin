@@ -15,7 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import bjzhou.coolapk.app.R;
-import bjzhou.coolapk.app.http.ApkDownloader;
+import bjzhou.coolapk.app.net.ApkDownloader;
 import bjzhou.coolapk.app.ui.fragments.HomepageFragment;
 import bjzhou.coolapk.app.ui.fragments.SettingsFragment;
 import bjzhou.coolapk.app.ui.fragments.UpgradeFragment;
@@ -45,7 +45,7 @@ public class NavActivity extends BaseActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         setFragment(HomepageFragment.newInstance());
-        ApkDownloader.getInstance(this).checkPermission(this);
+        ApkDownloader.getInstance().checkPermission(this);
     }
 
     @Override

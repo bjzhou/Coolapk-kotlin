@@ -1,8 +1,6 @@
 package bjzhou.coolapk.app.ui.fragments;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,22 +13,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import bjzhou.coolapk.app.R;
-import bjzhou.coolapk.app.ui.adapters.CommentAdapter;
-import bjzhou.coolapk.app.http.HttpHelper;
 import bjzhou.coolapk.app.model.Comment;
-import bjzhou.coolapk.app.util.Constant;
+import bjzhou.coolapk.app.net.ApiManager;
+import bjzhou.coolapk.app.ui.adapters.CommentAdapter;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 
 /**
  * Created by bjzhou on 14-8-5.
  */
-public class CommentFragment extends Fragment implements AbsListView.OnScrollListener, Handler.Callback {
+public class CommentFragment extends Fragment implements AbsListView.OnScrollListener, Observer<List<Comment>> {
 
     private int mId;
     private ExpandableListView mListView;
     private List<Comment> mCommentList = new ArrayList<Comment>();
-    private int mPage = 1;
+    private int mPage = 0;
     private CommentAdapter mAdapter;
-    private Handler mHandler = new Handler(this);
 
     public CommentFragment() {
     }
@@ -67,7 +65,8 @@ public class CommentFragment extends Fragment implements AbsListView.OnScrollLis
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        HttpHelper.getInstance(getActivity()).obtainCommentList(mId, 1, mHandler);
+        mPage = 0;
+        ApiManager.getInstance().obtainCommentList(mId, ++mPage).subscribeWith(this);
     }
 
     @Override
@@ -77,7 +76,7 @@ public class CommentFragment extends Fragment implements AbsListView.OnScrollLis
                 if (view.getLastVisiblePosition() == (view.getCount() - 1)) {
                     // reached the end of the view
                     //TODO show loading status
-                    HttpHelper.getInstance(getActivity()).obtainCommentList(mId, mPage + 1, mHandler);
+                    ApiManager.getInstance().obtainCommentList(mId, ++mPage).subscribeWith(this);
                 }
                 break;
             case AbsListView.OnScrollListener.SCROLL_STATE_FLING:
@@ -92,31 +91,33 @@ public class CommentFragment extends Fragment implements AbsListView.OnScrollLis
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mHandler.removeCallbacksAndMessages(null);
+    public void onSubscribe(Disposable d) {
     }
 
     @Override
-    public boolean handleMessage(Message msg) {
-        switch (msg.what) {
-            case Constant.MSG_OBTAIN_COMPLETE:
-                mCommentList = (List<Comment>) msg.obj;
-                mAdapter.setCommentList(mCommentList);
-                mListView.setAdapter(mAdapter);
-                mPage = 1;
-                break;
-            case Constant.MSG_OBTAIN_MORE_COMPLETE:
-                mPage++;
-                List<Comment> obj = (List<Comment>) msg.obj;
-                if (obj == null || obj.size() == 0) {
-                    Toast.makeText(getActivity(), "没有了", Toast.LENGTH_SHORT).show();
-                }
-                mCommentList.addAll(((List<Comment>) msg.obj));
-                mAdapter.setCommentList(mCommentList);
-                mAdapter.notifyDataSetChanged();
-                break;
+    public void onNext(List<Comment> comments) {
+        if (mPage == 1) {
+            mCommentList = comments;
+            mAdapter.setCommentList(mCommentList);
+            mListView.setAdapter(mAdapter);
+        } else {
+            if (comments == null || comments.size() == 0) {
+                Toast.makeText(getActivity(), "没有了", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            mCommentList.addAll(comments);
+            mAdapter.setCommentList(mCommentList);
+            mAdapter.notifyDataSetChanged();
         }
-        return true;
+    }
+
+    @Override
+    public void onError(Throwable e) {
+        Toast.makeText(getActivity(), e.toString(), Toast.LENGTH_SHORT).show();
+        onComplete();
+    }
+
+    @Override
+    public void onComplete() {
     }
 }

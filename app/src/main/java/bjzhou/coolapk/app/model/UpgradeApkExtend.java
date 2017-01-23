@@ -43,4 +43,13 @@ public class UpgradeApkExtend {
     public void setLogo(Drawable logo) {
         this.logo = logo;
     }
+
+    @Override
+    public String toString() {
+        return "UpgradeApkExtend{" +
+                "info=" + info +
+                ", title='" + title + '\'' +
+                ", logo=" + logo +
+                '}';
+    }
 }

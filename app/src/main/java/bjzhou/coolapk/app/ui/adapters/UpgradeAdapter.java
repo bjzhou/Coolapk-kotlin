@@ -1,7 +1,5 @@
 package bjzhou.coolapk.app.ui.adapters;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -10,15 +8,13 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.io.File;
 import java.util.List;
 
 import bjzhou.coolapk.app.R;
-import bjzhou.coolapk.app.http.ApkDownloader;
 import bjzhou.coolapk.app.model.UpgradeApkExtend;
-import bjzhou.coolapk.app.ui.fragments.UpgradeFragment;
+import bjzhou.coolapk.app.net.ApkDownloader;
+import bjzhou.coolapk.app.net.DownloadMonitor;
 
 /**
  * Created by bjzhou on 14-8-13.
@@ -27,12 +23,10 @@ public class UpgradeAdapter extends RecyclerView.Adapter {
 
     private static final String TAG = "UpgradeAdapter";
     private final FragmentActivity mActivity;
-    private final RecyclerView mRecyclerView;
     private List<UpgradeApkExtend> mUpgradeList;
 
-    public UpgradeAdapter(FragmentActivity activity, RecyclerView recyclerView) {
+    public UpgradeAdapter(FragmentActivity activity) {
         mActivity = activity;
-        mRecyclerView = recyclerView;
     }
 
     @Override
@@ -53,7 +47,7 @@ public class UpgradeAdapter extends RecyclerView.Adapter {
             holder.changelogView.setVisibility(View.VISIBLE);
         }
 
-        ApkDownloader.DownloadListener downloadListener = new ApkDownloader.DownloadListener() {
+        DownloadMonitor.DownloadListener downloadListener = new DownloadMonitor.DownloadListener() {
             @Override
             public void onDownloading(int percent) {
                 holder.upgradeButton.setText(percent + "%");
@@ -64,13 +58,6 @@ public class UpgradeAdapter extends RecyclerView.Adapter {
                 switch (errCode) {
                     case DOWNLOAD_FAIL:
                         holder.upgradeButton.setText("下载失败,点击重试");
-                        break;
-                    case INSTALL_FAIL:
-                        Toast.makeText(mActivity, err[0], Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setDataAndType(Uri.fromFile(new File(err[1])), "application/vnd.android.package-archive");
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        mActivity.startActivityForResult(intent, UpgradeFragment.INSTALL_REQUEST_CODE);
                         break;
                 }
             }
@@ -85,9 +72,9 @@ public class UpgradeAdapter extends RecyclerView.Adapter {
                 holder.upgradeButton.setText("安装成功");
             }
         };
-        int id = (int) mUpgradeList.get(position).getApk().getId();
-        if (ApkDownloader.getInstance(mActivity).isDownloading(id)) {
-            ApkDownloader.getInstance(mActivity).setListener(id, downloadListener);
+        int id = mUpgradeList.get(position).getApk().getId();
+        if (ApkDownloader.getInstance().isDownloading(id)) {
+            ApkDownloader.getInstance().addListener(id, downloadListener);
         } else {
             holder.upgradeButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -110,7 +97,8 @@ public class UpgradeAdapter extends RecyclerView.Adapter {
 
     private void downloadAndInstall(final Button button, final UpgradeApkExtend apkExtend) {
         button.setText("正在准备下载");
-        ApkDownloader.getInstance(mActivity).download(apkExtend.getApk(), new ApkDownloader.DownloadListener() {
+        apkExtend.getApk().setTitle(apkExtend.getTitle());
+        ApkDownloader.getInstance().downloadAndInstall(mActivity, apkExtend.getApk(), new DownloadMonitor.DownloadListener() {
                     @Override
                     public void onDownloading(int percent) {
                         button.setText(percent + "%");
@@ -121,13 +109,6 @@ public class UpgradeAdapter extends RecyclerView.Adapter {
                         switch (errCode) {
                             case DOWNLOAD_FAIL:
                                 button.setText("下载失败,点击重试");
-                                break;
-                            case INSTALL_FAIL:
-                                Toast.makeText(mActivity, err[0], Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(Intent.ACTION_VIEW);
-                                intent.setDataAndType(Uri.fromFile(new File(err[1])), "application/vnd.android.package-archive");
-                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                mActivity.startActivityForResult(intent, UpgradeFragment.INSTALL_REQUEST_CODE);
                                 break;
                         }
                     }
@@ -148,7 +129,7 @@ public class UpgradeAdapter extends RecyclerView.Adapter {
         mUpgradeList = upgradeList;
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    private static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView logoView;
         TextView titleView;
         TextView infoView;

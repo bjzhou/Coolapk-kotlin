@@ -2,8 +2,6 @@ package bjzhou.coolapk.app.ui.fragments;
 
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -19,16 +17,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import bjzhou.coolapk.app.R;
-import bjzhou.coolapk.app.ui.adapters.ApkListAdapter;
-import bjzhou.coolapk.app.http.HttpHelper;
 import bjzhou.coolapk.app.model.Apk;
-import bjzhou.coolapk.app.util.Constant;
+import bjzhou.coolapk.app.net.ApiManager;
+import bjzhou.coolapk.app.ui.adapters.ApkListAdapter;
 import bjzhou.coolapk.app.widget.LoadMoreDecoration;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 
 /**
  * Created by bjzhou on 14-7-29.
  */
-public class HomepageFragment extends Fragment implements Handler.Callback {
+public class HomepageFragment extends Fragment implements Observer<List<Apk>> {
 
     private static final String TAG = "HomepageFragment";
     private String mQuery = null;
@@ -39,16 +38,9 @@ public class HomepageFragment extends Fragment implements Handler.Callback {
 
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
-    private int mPage = 1;
+    private int mPage = 0;
 
-    private Handler mHandler = new Handler(this);
     private LinearLayoutManager mLayoutManager;
-    private int visibleItemCount;
-    private int totalItemCount;
-    private int firstVisibleItem;
-    private boolean loading = true;
-    private int previousTotal;
-    private int visibleThreshold = 5;
     private int mInsets;
     private LoadMoreDecoration mLoadMoreDecoration;
 
@@ -99,7 +91,7 @@ public class HomepageFragment extends Fragment implements Handler.Callback {
         mLoadMoreDecoration.setListener(new LoadMoreDecoration.Listener() {
             @Override
             public void onLoadMore() {
-                obtainApkList(mPage + 1);
+                obtainApkList(++mPage);
             }
         });
         mRecyclerView.addItemDecoration(mLoadMoreDecoration);
@@ -113,14 +105,16 @@ public class HomepageFragment extends Fragment implements Handler.Callback {
             @Override
             public void onRefresh() {
                 mLoadMoreDecoration.reset();
-                obtainApkList(1);
+                mPage = 0;
+                obtainApkList(++mPage);
             }
         });
 
         rootView.postDelayed(new Runnable() {
             @Override
             public void run() {
-                obtainApkList(1);
+                mPage = 0;
+                obtainApkList(++mPage);
                 mSwipeRefreshLayout.setRefreshing(true);
             }
         }, 100);
@@ -135,43 +129,42 @@ public class HomepageFragment extends Fragment implements Handler.Callback {
 
     private void obtainApkList(int page) {
         if (mQuery == null) {
-            HttpHelper.getInstance(getActivity()).obtainHomepageApkList(page, mHandler);
+            ApiManager.getInstance().obtainHomepageApkList(page).subscribeWith(this);
         } else {
-            HttpHelper.getInstance(getActivity()).obtainSearchApkList(URLEncoder.encode(mQuery), page, mHandler);
+            ApiManager.getInstance().obtainSearchApkList(URLEncoder.encode(mQuery), page).subscribeWith(this);
         }
     }
 
     @Override
-    public boolean handleMessage(Message msg) {
+    public void onSubscribe(Disposable d) {
+    }
+
+    @Override
+    public void onNext(List<Apk> apks) {
+        if (mPage == 1) {
+            mApkList = apks;
+            mAdapter.setApkList(mApkList);
+            mRecyclerView.setAdapter(mAdapter);
+        } else {
+            mPage++;
+            if (apks == null || apks.size() == 0) {
+                mLoadMoreDecoration.loadComplete();
+                return;
+            }
+            mApkList.addAll(apks);
+            mAdapter.setApkList(mApkList);
+            mAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void onError(Throwable e) {
+        Toast.makeText(getActivity(), e.toString(), Toast.LENGTH_SHORT).show();
+        onComplete();
+    }
+
+    @Override
+    public void onComplete() {
         mSwipeRefreshLayout.setRefreshing(false);
-        switch (msg.what) {
-            case Constant.MSG_OBTAIN_COMPLETE:
-                mApkList = (List<Apk>) msg.obj;
-                mAdapter.setApkList(mApkList);
-                mRecyclerView.setAdapter(mAdapter);
-                mPage = 1;
-                return true;
-            case Constant.MSG_OBTAIN_MORE_COMPLETE:
-                mPage++;
-                List<Apk> obj = (List<Apk>) msg.obj;
-                if (obj == null || obj.size() == 0) {
-                    mLoadMoreDecoration.loadComplete();
-                    return true;
-                }
-                mApkList.addAll(((List<Apk>) msg.obj));
-                mAdapter.setApkList(mApkList);
-                mAdapter.notifyDataSetChanged();
-                return true;
-            case Constant.MSG_OBTAIN_FAILED:
-                Toast.makeText(getActivity(), "Please Check Network!!!", Toast.LENGTH_SHORT).show();
-                return true;
-        }
-        return false;
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mHandler.removeCallbacksAndMessages(null);
     }
 }

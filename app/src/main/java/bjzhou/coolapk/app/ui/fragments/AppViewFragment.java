@@ -4,8 +4,6 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.text.Html;
 import android.text.TextUtils;
@@ -22,23 +20,25 @@ import android.widget.Toast;
 import com.squareup.picasso.Picasso;
 
 import bjzhou.coolapk.app.R;
-import bjzhou.coolapk.app.http.ApkDownloader;
-import bjzhou.coolapk.app.http.HttpHelper;
 import bjzhou.coolapk.app.model.ApkField;
+import bjzhou.coolapk.app.net.ApiManager;
+import bjzhou.coolapk.app.net.ApkDownloader;
+import bjzhou.coolapk.app.net.DownloadMonitor;
 import bjzhou.coolapk.app.ui.activities.PhotoViewer;
 import bjzhou.coolapk.app.util.TimeUtility;
+import io.reactivex.functions.Consumer;
 
 /**
  * Created by bjzhou on 14-7-29.
  */
-public class AppViewFragment extends Fragment implements View.OnClickListener, Handler.Callback {
+public class AppViewFragment extends Fragment implements View.OnClickListener {
 
     private static final String TAG = "AppViewFragment";
     private int mId;
 
     private ApkField mField;
 
-    // 0:not install, 1: installed, 2: should update, -1: download failed, -2: install failed
+    // 0:not install, 1: installed, 2: should update, -1: downloadAndInstall failed, -2: install failed
     private int mInstallStatus = 0;
 
     private int[] mScreenshotId = new int[]{
@@ -64,8 +64,7 @@ public class AppViewFragment extends Fragment implements View.OnClickListener, H
     private TextView mUpdateView;
     private TextView mRemarkView;
     private TextView mIntroduceView;
-    private ApkDownloader.DownloadListener downloadListener;
-    private Handler mHandler = new Handler(this);
+    private DownloadMonitor.DownloadListener downloadListener;
     private ImageButton mCommentButton;
 
     public AppViewFragment() {
@@ -112,7 +111,7 @@ public class AppViewFragment extends Fragment implements View.OnClickListener, H
         mIntroduceView = (TextView) rootView.findViewById(R.id.app_view_introduce);
 
         mDownloadButton.setOnClickListener(this);
-        downloadListener = new ApkDownloader.DownloadListener() {
+        downloadListener = new DownloadMonitor.DownloadListener() {
             @Override
             public void onDownloading(int percent) {
                 //mDownloadButton.setText(percent + "%");
@@ -124,11 +123,6 @@ public class AppViewFragment extends Fragment implements View.OnClickListener, H
                     case DOWNLOAD_FAIL:
                         mInstallStatus = -1;
                         //mDownloadButton.setText("下载失败,点击重试");
-                        break;
-                    case INSTALL_FAIL:
-                        if (getActivity() != null) {
-                            Toast.makeText(getActivity(), err[0], Toast.LENGTH_SHORT).show();
-                        }
                         break;
                 }
             }
@@ -147,7 +141,12 @@ public class AppViewFragment extends Fragment implements View.OnClickListener, H
         };
         mCommentButton.setOnClickListener(this);
 
-        HttpHelper.getInstance(getActivity()).obtainApkField(mId, mHandler);
+        ApiManager.getInstance().obtainApkField(mId).subscribe(new Consumer<ApkField>() {
+            @Override
+            public void accept(ApkField apkField) throws Exception {
+                onObtainApkField(apkField);
+            }
+        });
         return rootView;
     }
 
@@ -163,7 +162,7 @@ public class AppViewFragment extends Fragment implements View.OnClickListener, H
             }
 
             //mDownloadButton.setText("正在准备下载");
-            ApkDownloader.getInstance(getActivity()).download(mField.getMeta(), downloadListener);
+            ApkDownloader.getInstance().downloadAndInstall(getActivity(), mField.getMeta(), downloadListener);
 
         } else {
 
@@ -184,16 +183,10 @@ public class AppViewFragment extends Fragment implements View.OnClickListener, H
         }
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mHandler.removeCallbacksAndMessages(null);
-    }
-
-    @Override
-    public boolean handleMessage(Message msg) {
-        if (getActivity() == null) return true;
-        mField = (ApkField) msg.obj;
+    private void onObtainApkField(ApkField apkField) {
+        if (getActivity() == null) return;
+        if (apkField == null) return;
+        mField = apkField;
         Picasso.with(getActivity())
                 .load(mField.getMeta().getLogo())
                 .placeholder(R.drawable.ic_default_avatar)
@@ -201,8 +194,8 @@ public class AppViewFragment extends Fragment implements View.OnClickListener, H
         mAppTitleView.setText(mField.getMeta().getTitle());
         mRatingBar.setRating(mField.getMeta().getScore());
         mInfoView.setText(mField.getMeta().getApkversionname());
-        if (ApkDownloader.getInstance(getActivity()).isDownloading(mId)) {
-            ApkDownloader.getInstance(getActivity()).setListener(mId, downloadListener);
+        if (ApkDownloader.getInstance().isDownloading(mId)) {
+            ApkDownloader.getInstance().addListener(mId, downloadListener);
         } else {
             int installedVersion = getInstalledVersion(mField.getMeta().getApkname());
             if (installedVersion == -1) {
@@ -223,6 +216,7 @@ public class AppViewFragment extends Fragment implements View.OnClickListener, H
 
         screenshots = mField.getField().getScreenshots().split(",");
         for (int i = 0; i < screenshots.length; i++) {
+            if (i >= mScreenshotView.length) return;
             mScreenshotView[i].setVisibility(View.VISIBLE);
             Picasso.with(getActivity())
                     .load(screenshots[i])
@@ -263,6 +257,5 @@ public class AppViewFragment extends Fragment implements View.OnClickListener, H
         introduce = introduce.replace("\n", "<br/>");
         mIntroduceView.setText(Html.fromHtml(introduce));
         mIntroduceView.setMovementMethod(LinkMovementMethod.getInstance());
-        return true;
     }
 }

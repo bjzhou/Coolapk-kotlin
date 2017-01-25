@@ -5,8 +5,9 @@ Coolapk
 
 ### 酷市场 V7 版 API 相关
 
-1. 所有接口使用统一的前缀： https://api.coolapk.com/v6/
-2. 所有接口使用统一的 HTTP 头：
+所有接口使用统一的前缀： https://api.coolapk.com/v6/
+
+所有接口使用统一的 HTTP 头：
 
 ```
 User-Agent: Dalvik/2.1.0 (Linux; U; Android 5.1.1; Nexus 4 Build/LMY48T) (#Build; google; Nexus 4; LMY48T; 5.1.1) +CoolMarket/7.3
@@ -21,7 +22,7 @@ X-Api-Version: 7
 ```
 具体参数获取方式可参考ApiManager.java，其中X-App-Token的生成是c++写的，直接引用了酷市场的 so 文件，不清楚具体算法，组合方式应该是`校验和+uuid+时间戳`
 
-3. 本项目介绍了 `main/init` 和 `picture/list` 两个接口的具体使用方法，分别是获取启动图和所有酷图的，其他接口可参考下面的 retrofit 接口文件：
+本项目介绍了 `main/init` 和 `picture/list` 两个接口的具体使用方法，分别是获取启动图和所有酷图的，其他接口可参考下面的 retrofit 接口文件：
 
 ```java
 public interface CoolMarketService {

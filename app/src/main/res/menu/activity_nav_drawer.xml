@@ -6,6 +6,12 @@
             android:id="@+id/nav_home"
             android:title="@string/title_section1" />
         <item
+            android:id="@+id/nav_start_page"
+            android:title="@string/title_start_page" />
+        <item
+            android:id="@+id/nav_pictures"
+            android:title="@string/title_pictures" />
+        <item
             android:id="@+id/nav_upgrade"
             android:title="@string/title_section2" />
         <item

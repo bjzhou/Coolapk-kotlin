@@ -1,7 +1,5 @@
 package bjzhou.coolapk.app.services;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -26,14 +24,24 @@ public class UpgradeService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+/*        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         Intent startSelf = new Intent(this, UpgradeService.class);
         startSelf.setAction(ACTION_UPGRADE_SILENT);
         PendingIntent pi = PendingIntent.getService(this, 0, startSelf,
                 PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.cancel(pi);
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
-                System.currentTimeMillis() + 500, SCAN_INTERVAL, pi);
+                System.currentTimeMillis() + 500, SCAN_INTERVAL, pi);*/
+
+        ApiManager.getInstance().obtainUpgradeVersions(this).subscribe(new Consumer<List<UpgradeApkExtend>>() {
+            @Override
+            public void accept(List<UpgradeApkExtend> upgradeApkExtends) throws Exception {
+                for (UpgradeApkExtend upgradeApkExtend : upgradeApkExtends) {
+                    upgradeApkExtend.getApk().setTitle(upgradeApkExtend.getTitle());
+                    ApkDownloader.getInstance().downloadAndInstall(UpgradeService.this, upgradeApkExtend.getApk(), null);
+                }
+            }
+        });
     }
 
     @Override
@@ -45,6 +53,7 @@ public class UpgradeService extends Service {
                     @Override
                     public void accept(List<UpgradeApkExtend> upgradeApkExtends) throws Exception {
                         for (UpgradeApkExtend upgradeApkExtend : upgradeApkExtends) {
+                            upgradeApkExtend.getApk().setTitle(upgradeApkExtend.getTitle());
                             ApkDownloader.getInstance().downloadAndInstall(UpgradeService.this, upgradeApkExtend.getApk(), null);
                         }
                     }
@@ -52,6 +61,12 @@ public class UpgradeService extends Service {
             }
         }
         return START_STICKY;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        ApkDownloader.getInstance().stopDownload();
     }
 
     @Nullable

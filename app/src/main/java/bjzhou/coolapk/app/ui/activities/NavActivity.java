@@ -4,6 +4,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
@@ -16,10 +17,10 @@ import android.view.MenuItem;
 
 import bjzhou.coolapk.app.R;
 import bjzhou.coolapk.app.net.ApkDownloader;
+import bjzhou.coolapk.app.ui.base.BaseActivity;
 import bjzhou.coolapk.app.ui.fragments.HomepageFragment;
 import bjzhou.coolapk.app.ui.fragments.SettingsFragment;
 import bjzhou.coolapk.app.ui.fragments.UpgradeFragment;
-import bjzhou.coolapk.app.ui.base.BaseActivity;
 
 public class NavActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -33,12 +34,12 @@ public class NavActivity extends BaseActivity
         setContentView(R.layout.activity_nav);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle(R.string.title_section1);
+        setActionBarTitle(R.string.title_section1);
 
         mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, mDrawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        mDrawer.setDrawerListener(toggle);
+        mDrawer.addDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -84,26 +85,36 @@ public class NavActivity extends BaseActivity
         return true;
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        Fragment fragment = null;
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        Fragment fragment;
 
         switch (item.getItemId()) {
             case R.id.nav_home:
                 fragment = HomepageFragment.newInstance();
-                getSupportActionBar().setTitle(R.string.title_section1);
+                setActionBarTitle(R.string.title_section1);
+                setFragment(fragment);
+                break;
+            case R.id.nav_start_page:
+                Intent intent = new Intent(this, PhotoViewer.class);
+                intent.putExtra("startPage", true);
+                startActivity(intent);
+                break;
+            case R.id.nav_pictures:
+                intent = new Intent(this, PicturesActivity.class);
+                startActivity(intent);
                 break;
             case R.id.nav_upgrade:
                 fragment = UpgradeFragment.newInstance();
-                getSupportActionBar().setTitle(R.string.title_section2);
+                setActionBarTitle(R.string.title_section2);
+                setFragment(fragment);
                 break;
             case R.id.nav_settings:
                 fragment = SettingsFragment.newInstance();
-                getSupportActionBar().setTitle(R.string.title_section3);
+                setActionBarTitle(R.string.title_section3);
+                setFragment(fragment);
                 break;
         }
-        setFragment(fragment);
 
         mDrawer.closeDrawer(GravityCompat.START);
         return true;

@@ -9,6 +9,7 @@ public class Constant {
     public static final String COOLAPK_DID = "d41d8cd98f00b204e9800998ecf8427e";
 
     public static final String COOLAPK_PREURL = "http://api.coolapk.com/market/v2/";
+    public static final String COOL_MARKET_PREURL_V6 = "https://api.coolapk.com/v6/";
     public static final String METHOD_ON_DOWNLOAD_APK = "api.php?apikey=%s&method=onDownloadApk&v=%s&sn=null";
 
     public static final int MSG_OBTAIN_COMPLETE = 1;

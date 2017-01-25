@@ -54,7 +54,7 @@ public class ApkDownloader {
 
         if (downloadingIds.indexOfKey(apk.getId()) != -1) {
             if (_listener != null) {
-                downloadingIds.get(apk.getId()).addDownloadListener(_listener);
+                downloadingIds.get(apk.getId()).setDownloadListener(_listener);
             }
             return;
         }
@@ -65,20 +65,39 @@ public class ApkDownloader {
             @Override
             public void onFinish(Apk apk) {
                 downloadingIds.remove(apk.getId());
+                checkDownloadThread();
             }
         });
         if (_listener != null) {
-            monitor.addDownloadListener(_listener);
+            monitor.setDownloadListener(_listener);
         }
         downloadingIds.put(apk.getId(), monitor);
-        monitor.start();
+        if (downloadingIds.size() <= 3) {
+            monitor.start();
+        }
+    }
+
+    private synchronized void checkDownloadThread() {
+        for (int i = 0; i < downloadingIds.size(); i++) {
+            DownloadMonitor m = downloadingIds.valueAt(i);
+            if (!m.isStarted()) {
+                m.start();
+                break;
+            }
+        }
     }
 
     public boolean isDownloading(int id) {
-        return downloadingIds.indexOfKey(id) != -1;
+        return downloadingIds.indexOfKey(id) != -1 && downloadingIds.get(id).isStarted();
     }
 
-    public void addListener(int id, DownloadMonitor.DownloadListener listener) {
-        downloadingIds.get(id).addDownloadListener(listener);
+    public void setListener(int id, DownloadMonitor.DownloadListener listener) {
+        downloadingIds.get(id).setDownloadListener(listener);
+    }
+
+    public void stopDownload() {
+        for (int i = 0; i < downloadingIds.size(); i++) {
+            downloadingIds.valueAt(i).stopDownload();
+        }
     }
 }

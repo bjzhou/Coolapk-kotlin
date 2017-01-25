@@ -9,18 +9,27 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.text.Html;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.coolapk.market.util.AuthUtils;
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import bjzhou.coolapk.app.App;
+import bjzhou.coolapk.app.exceptions.ClientException;
 import bjzhou.coolapk.app.model.Apk;
 import bjzhou.coolapk.app.model.ApkField;
+import bjzhou.coolapk.app.model.CardEntity;
 import bjzhou.coolapk.app.model.Comment;
+import bjzhou.coolapk.app.model.PictureEntity;
+import bjzhou.coolapk.app.model.Result;
 import bjzhou.coolapk.app.model.UpgradeApkExtend;
 import bjzhou.coolapk.app.util.Constant;
+import bjzhou.coolapk.app.util.Utils;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
@@ -44,9 +53,73 @@ public class ApiManager {
     private static final String TAG = "ApiManager";
 
     private static ApiManager instance;
-    private final CoolapkService mService;
+    private CoolapkService mService;
+    private CoolMarketServiceV6 mServiceV6;
 
     private ApiManager() {
+        initService();
+        initServiceV6();
+    }
+
+    public static ApiManager getInstance() {
+        if (instance == null) {
+            instance = new ApiManager();
+        }
+        return instance;
+    }
+
+    public static boolean isWifiConnected(Context context) {
+        ConnectivityManager connManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo wifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        return wifi.isConnected();
+    }
+
+    public static boolean checkNetworkState(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnectedOrConnecting();
+    }
+
+    private void initServiceV6() {
+        OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new Interceptor() {
+            @Override
+            public Response intercept(Chain chain) throws IOException {
+                try {
+                    Request original = chain.request();
+
+                    Log.d(TAG, "url: " + original.url());
+
+                    Request.Builder requestBuilder = original.newBuilder()
+                            .header("User-Agent", Utils.getUserAgent())
+                            .header("X-Requested-With", "XMLHttpRequest")
+                            .header("X-Sdk-Int", String.valueOf(Build.VERSION.SDK_INT))
+                            .header("X-Sdk-Locale", Utils.getLocaleString())
+                            .header("X-App-Id", "coolmarket")
+                            .header("X-App-Token", AuthUtils.getAS(Utils.getUUID()))
+                            .header("X-App-Version", "7.3")
+                            .header("X-App-Code", "1701135")
+                            .header("X-Api-Version", "7");
+
+                    Request request = requestBuilder.build();
+//                Log.d(TAG, "headers: " + request.headers());
+                    return chain.proceed(request);
+                } catch (IOException e) {
+                    //FIXME: call observer.onError if time out.
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+        }).build();
+        Retrofit retrofit = new Retrofit.Builder()
+                .client(client)
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
+                .baseUrl(Constant.COOL_MARKET_PREURL_V6)
+                .build();
+
+        mServiceV6 = retrofit.create(CoolMarketServiceV6.class);
+    }
+
+    private void initService() {
         OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new Interceptor() {
             @Override
             public Response intercept(Chain chain) throws IOException {
@@ -71,24 +144,6 @@ public class ApiManager {
                 .build();
 
         mService = retrofit.create(CoolapkService.class);
-    }
-
-    public static ApiManager getInstance() {
-        if (instance == null) {
-            instance = new ApiManager();
-        }
-        return instance;
-    }
-
-    public static boolean isWifiConnected(Context context) {
-        ConnectivityManager connManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo wifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        return wifi.isConnected();
-    }
-
-    public static boolean checkNetworkState(Context context) {
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnectedOrConnecting();
     }
 
     public Observable<List<Apk>> obtainHomepageApkList(int page) {
@@ -169,6 +224,39 @@ public class ApiManager {
                         return updateList;
                     }
                 })
+                .observeOn(AndroidSchedulers.mainThread())
+                .onErrorReturn(new Function<Throwable, List<UpgradeApkExtend>>() {
+                    @Override
+                    public List<UpgradeApkExtend> apply(Throwable throwable) throws Exception {
+                        Toast.makeText(App.getContext(), throwable.toString(), Toast.LENGTH_SHORT).show();
+                        return Collections.emptyList();
+                    }
+                });
+    }
+
+    public Observable<List<CardEntity>> init() {
+        return mServiceV6.init()
+                .map(new ResultHandlerV6<List<CardEntity>>())
+                .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    public Observable<List<PictureEntity>> pictureList(String type, int page) {
+        return mServiceV6.getPictureList("", type, 0, "", "")
+                .map(new ResultHandlerV6<List<PictureEntity>>())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    private class ResultHandlerV6<T> implements Function<Result<T>, T> {
+
+        @Override
+        public T apply(Result<T> tResult) throws Exception {
+            ClientException exception = tResult.checkResult();
+            if (exception != null) {
+                throw exception;
+            }
+            return tResult.getData();
+        }
     }
 }

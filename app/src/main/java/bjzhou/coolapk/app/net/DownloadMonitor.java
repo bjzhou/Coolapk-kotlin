@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 
 import java.io.File;
@@ -35,11 +36,13 @@ public class DownloadMonitor extends Thread {
     private final PackageManager packageManager;
     private final DownloadManager downloadManager;
     private final NotificationManager notificationManager;
+    private boolean started;
     private Apk apk;
     private Context context;
     private Handler handler = new Handler(Looper.getMainLooper());
     private List<DownloadListener> downloadListeners = new ArrayList<>();
     private FinishListener finishListener;
+    private long downloadId = -1;
 
     public DownloadMonitor(Context context, Apk apk) {
         this.context = context.getApplicationContext();
@@ -47,13 +50,15 @@ public class DownloadMonitor extends Thread {
         packageManager = context.getPackageManager();
         downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        started = false;
     }
 
     public void setFinishListener(FinishListener listener) {
         this.finishListener = listener;
     }
 
-    public void addDownloadListener(DownloadListener listener) {
+    public void setDownloadListener(DownloadListener listener) {
+        downloadListeners.clear();
         downloadListeners.add(listener);
     }
 
@@ -61,8 +66,13 @@ public class DownloadMonitor extends Thread {
         return packageName + "_" + appVersion + ".apk";
     }
 
+    public boolean isStarted() {
+        return started;
+    }
+
     @Override
     public void run() {
+        started = true;
         final String name = getDownloadName(apk.getApkname(), apk.getApkversionname());
         final String filePath = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
                 + File.separator + name;
@@ -89,26 +99,29 @@ public class DownloadMonitor extends Thread {
         request.setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, name);
         request.setMimeType("application/vnd.android.package-archive");
         request.addRequestHeader("Cookie", "coolapk_did=" + Constant.COOLAPK_DID);
-        long downloadId = downloadManager.enqueue(request);
+        downloadId = downloadManager.enqueue(request);
 
         boolean downloading = true;
+        DownloadManager.Query q;
+        Cursor cursor;
+        int dl_progress;
         while (downloading) {
-
-            DownloadManager.Query q = new DownloadManager.Query();
+            q = new DownloadManager.Query();
             q.setFilterById(downloadId);
 
-            Cursor cursor = downloadManager.query(q);
+            cursor = downloadManager.query(q);
             cursor.moveToFirst();
             int bytes_downloaded = cursor.getInt(cursor
                     .getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
             int bytes_total = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
 
-            final int dl_progress = (int) ((bytes_downloaded * 100L) / bytes_total);
+            dl_progress = (int) ((bytes_downloaded * 100L) / bytes_total);
+            final int finalDl_progress = dl_progress;
             handler.post(new Runnable() {
                 @Override
                 public void run() {
                     for (DownloadListener listener : downloadListeners) {
-                        listener.onDownloading(dl_progress);
+                        listener.onDownloading(finalDl_progress);
                     }
                 }
             });
@@ -140,6 +153,8 @@ public class DownloadMonitor extends Thread {
             }
 
             cursor.close();
+
+            SystemClock.sleep(50);
         }
     }
 
@@ -204,6 +219,12 @@ public class DownloadMonitor extends Thread {
         builder.setSmallIcon(complete ? R.drawable.ic_stat_ok : R.drawable.ic_stat_install);
         Notification notification = builder.getNotification();
         notificationManager.notify(apk.getTitle().hashCode(), notification);
+    }
+
+    public void stopDownload() {
+        if (downloadId != -1) {
+            downloadManager.remove(downloadId);
+        }
     }
 
     public interface DownloadListener {

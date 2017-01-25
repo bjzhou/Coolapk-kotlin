@@ -16,12 +16,41 @@
 
 package bjzhou.coolapk.app.util;
 
+import android.content.SharedPreferences;
+import android.os.Build;
+import android.preference.PreferenceManager;
+import android.text.Html;
+
+import java.util.Locale;
+import java.util.UUID;
+
+import bjzhou.coolapk.app.App;
+
 /**
  * Class containing some static utility methods.
  */
 public class Utils {
-    private Utils() {
+
+    public static String getUserAgent() {
+        StringBuilder stringBuilder = new StringBuilder();
+        String str = System.getProperty("http.agent");
+        stringBuilder.append(str).append(" (#Build; ").append(Build.BRAND).append("; ").append(Build.MODEL).append("; ").append(Build.DISPLAY).append("; ").append(Build.VERSION.RELEASE).append(")");
+        stringBuilder.append(" +CoolMarket/7.3");
+        return Html.escapeHtml(stringBuilder.toString());
     }
 
-    ;
+    public static String getLocaleString() {
+        Locale locale = Locale.getDefault();
+        return locale.getLanguage() + "-" + locale.getCountry();
+    }
+
+    public static String getUUID() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(App.getContext());
+        if (sp.contains("uuid")) {
+            return sp.getString("uuid", "");
+        }
+        String uuid = UUID.randomUUID().toString();
+        sp.edit().putString("uuid", uuid).apply();
+        return uuid;
+    }
 }

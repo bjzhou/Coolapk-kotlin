@@ -195,7 +195,7 @@ public class AppViewFragment extends Fragment implements View.OnClickListener {
         mRatingBar.setRating(mField.getMeta().getScore());
         mInfoView.setText(mField.getMeta().getApkversionname());
         if (ApkDownloader.getInstance().isDownloading(mId)) {
-            ApkDownloader.getInstance().addListener(mId, downloadListener);
+            ApkDownloader.getInstance().setListener(mId, downloadListener);
         } else {
             int installedVersion = getInstalledVersion(mField.getMeta().getApkname());
             if (installedVersion == -1) {

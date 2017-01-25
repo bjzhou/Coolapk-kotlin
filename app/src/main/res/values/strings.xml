@@ -22,6 +22,18 @@
     <string name="app_view">应用详情</string>
     <string name="drawer_open">Open</string>
     <string name="drawer_closed">Close</string>
-    <string name="loading">正在加载...</string>
+    <string name="loading">正在加载…</string>
+    <string name="title_start_page">启动页</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_pictures">PicturesActivity</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="action_recommended">精选</string>
+    <string name="action_hot">热门</string>
+    <string name="action_start_page">启动页</string>
+    <string name="action_2k">2K</string>
+    <string name="action_newest">最新</string>
+    <string name="title_pictures">酷图</string>
 
 </resources>

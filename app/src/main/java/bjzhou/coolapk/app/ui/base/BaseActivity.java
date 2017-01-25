@@ -6,7 +6,9 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,5 +62,28 @@ public class BaseActivity extends AppCompatActivity {
                 mPermissionListener.onResult(permissions[i], grantResults[i] == PackageManager.PERMISSION_GRANTED);
             }
         }
+    }
+
+    protected void setActionBarTitle(int resId) {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle(resId);
+        }
+    }
+
+    protected void showHome(boolean showHome) {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayShowHomeEnabled(showHome);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

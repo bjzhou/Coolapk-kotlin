@@ -13,7 +13,7 @@ class AppViewActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_appview)
-
+        supportActionBar?.elevation = 0f
         val id = intent.getIntExtra("id", 0)
         setFragment(AppViewFragment.newInstance(id))
     }

@@ -2,7 +2,7 @@ package bjzhou.coolapk.app.model
 
 import bjzhou.coolapk.app.exceptions.ClientException
 
-class Result<T>(val status: Int, str: String?) {
+class Result<T>(val status: Int?, str: String?) {
     var data: T? = null
     var message: String = str ?: "Empty error message"
         private set
@@ -12,15 +12,15 @@ class Result<T>(val status: Int, str: String?) {
     }
 
     val isSuccess: Boolean
-        get() = status === 1
+        get() = status == null || status === 1
 
     val statusCode: Int
-        get() = status
+        get() = status ?: 1
 
     fun checkResult(): ClientException? {
         if (isSuccess) {
             return null
         }
-        return ClientException(status, message)
+        return ClientException(status ?: 1, message)
     }
 }

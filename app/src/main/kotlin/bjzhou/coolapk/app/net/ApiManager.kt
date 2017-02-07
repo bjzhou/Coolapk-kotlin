@@ -13,16 +13,17 @@ import bjzhou.coolapk.app.model.*
 import bjzhou.coolapk.app.util.Constant
 import bjzhou.coolapk.app.util.Utils
 import com.coolapk.market.util.AuthUtils
-import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import io.reactivex.Observable
 import io.reactivex.ObservableOnSubscribe
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.functions.Function
 import io.reactivex.schedulers.Schedulers
 import okhttp3.OkHttpClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by bjzhou on 14-7-29.
@@ -37,35 +38,30 @@ class ApiManager private constructor() {
     }
 
     private fun initServiceV6() {
-        val client = OkHttpClient.Builder().addInterceptor({ chain ->
-            try {
-                val original = chain.request()
+        val client = OkHttpClient.Builder()
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .readTimeout(15, TimeUnit.SECONDS)
+                .addInterceptor({ chain ->
+            val original = chain.request()
 
-                Log.d(TAG, "url: " + original.url())
+            Log.d(TAG, "url: " + original.url())
 
-                val requestBuilder = original.newBuilder()
-                        .header("User-Agent", Utils.userAgent)
-                        .header("X-Requested-With", "XMLHttpRequest")
-                        .header("X-Sdk-Int", Build.VERSION.SDK_INT.toString())
-                        .header("X-Sdk-Locale", Utils.localeString)
-                        .header("X-App-Id", "coolmarket")
-                        .header("X-App-Token", AuthUtils.getAS(Utils.uuid))
-                        .header("X-App-Version", "7.3")
-                        .header("X-App-Code", "1701135")
-                        .header("X-Api-Version", "7")
+            val requestBuilder = original.newBuilder()
+                    .header("User-Agent", Utils.userAgent)
+                    .header("X-Requested-With", "XMLHttpRequest")
+                    .header("X-Sdk-Int", Build.VERSION.SDK_INT.toString())
+                    .header("X-Sdk-Locale", Utils.localeString)
+                    .header("X-App-Id", "coolmarket")
+                    .header("X-App-Token", AuthUtils.getAS(Utils.uuid))
+                    .header("X-App-Version", "7.3")
+                    .header("X-App-Code", "1701135")
+                    .header("X-Api-Version", "7")
 
-                val request = requestBuilder.build()
-                //                Log.d(TAG, "headers: " + request.headers());
-                chain.proceed(request)
-            } catch (e: IOException) {
-                //FIXME: call observer.onError if time out.
-                e.printStackTrace()
-                null
-            }
+            val request = requestBuilder.build()
+            chain.proceed(request)
         }).build()
         val retrofit = Retrofit.Builder()
                 .client(client)
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .baseUrl(Constant.COOL_MARKET_PREURL_V6)
                 .build()
@@ -74,7 +70,10 @@ class ApiManager private constructor() {
     }
 
     private fun initService() {
-        val client = OkHttpClient.Builder().addInterceptor { chain ->
+        val client = OkHttpClient.Builder()
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .readTimeout(15, TimeUnit.SECONDS)
+                .addInterceptor { chain ->
             val original = chain.request()
             val url = original.url().newBuilder()
                     .addQueryParameter("apikey", Constant.API_KEY)
@@ -89,7 +88,6 @@ class ApiManager private constructor() {
         }.build()
         val retrofit = Retrofit.Builder()
                 .client(client)
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .baseUrl(Constant.COOLAPK_PREURL)
                 .build()
@@ -98,27 +96,19 @@ class ApiManager private constructor() {
     }
 
     fun obtainHomepageApkList(page: Int): Observable<List<Apk>> {
-        return mService.obtainHomepageApkList(page)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
+        return rxApi(mService.obtainHomepageApkList(page), emptyList())
     }
 
     fun obtainApkField(id: Int): Observable<ApkField> {
-        return mService.obtainApkField(id)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
+        return rxApi(mService.obtainApkField(id), ApkField())
     }
 
     fun obtainSearchApkList(query: String, page: Int): Observable<List<Apk>> {
-        return mService.obtainSearchApkList(query, page)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
+        return rxApi(mService.obtainSearchApkList(query, page), emptyList())
     }
 
     fun obtainCommentList(id: Int, page: Int): Observable<List<Comment>> {
-        return mService.obtainCommentList(id, page)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
+        return rxApi(mService.obtainCommentList(id, page), emptyList())
     }
 
     fun obtainUpgradeVersions(context: Context): Observable<List<UpgradeApkExtend>> {
@@ -137,9 +127,8 @@ class ApiManager private constructor() {
                     e.onComplete()
                 })
                 .subscribeOn(Schedulers.io())
-                .concatMap { s ->
-                    Log.d(TAG, "apply: obtainUpgradeVersions")
-                    mService.obtainUpgradeVersions(s)
+                .concatMap {
+                    rxApi(mService.obtainUpgradeVersions(it), emptyList())
                 }
                 .map { apks ->
                     Log.d(TAG, "apply: onResponse")
@@ -172,34 +161,58 @@ class ApiManager private constructor() {
     }
 
     fun init(): Observable<List<CardEntity>> {
-        return mServiceV6.init()
-                .map(ResultHandlerV6<List<CardEntity>>())
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
+        return rxApiV6(mServiceV6.init(), emptyList())
     }
 
     fun pictureList(type: String, page: Int): Observable<List<PictureEntity>> {
-        return mServiceV6.getPictureList("", type, 0, "", "")
-                .map(ResultHandlerV6<List<PictureEntity>>())
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
+        return rxApiV6(mServiceV6.getPictureList("", type, 0, "", ""), emptyList())
     }
 
-    private inner class ResultHandlerV6<T> : Function<Result<T>, T> {
+    private fun <T> rxApi(call: Call<T>, empty: T): Observable<T> {
+        return Observable.create<T> {
+            call.enqueue(object : Callback<T> {
+                override fun onFailure(call: Call<T>, t: Throwable?) {
+                    it.onError(t)
+                }
 
-        @Throws(Exception::class)
-        override fun apply(tResult: Result<T>): T? {
-            val exception = tResult.checkResult()
-            if (exception != null) {
-                throw exception
-            }
-            return tResult.data
-        }
+                override fun onResponse(call: Call<T>, response: Response<T>) {
+                    if (response.isSuccessful) {
+                        it.onNext(response.body() ?: empty)
+                        it.onComplete()
+                    } else {
+                        it.onError(Error("networkError: code: ${response.code()}, message: ${response.message()}"))
+                    }
+                }
+            })
+        }.observeOn(AndroidSchedulers.mainThread())
+    }
+
+    private fun <T> rxApiV6(call: Call<Result<T>>, empty: T): Observable<T> {
+        return Observable.create<T> {
+            call.enqueue(object : Callback<Result<T>> {
+                override fun onFailure(call: Call<Result<T>>, t: Throwable?) {
+                    it.onError(t)
+                }
+
+                override fun onResponse(call: Call<Result<T>>, response: Response<Result<T>>) {
+                    if (response.isSuccessful) {
+                        val exception = response.body().checkResult()
+                        if (exception != null) {
+                            it.onError(exception)
+                        }
+                        it.onNext(response.body().data ?: empty)
+                        it.onComplete()
+                    } else {
+                        it.onError(Error("networkError: code: ${response.code()}, message: ${response.message()}"))
+                    }
+                }
+            })
+        }.observeOn(AndroidSchedulers.mainThread())
     }
 
     companion object {
 
-        private val TAG = "ApiManager"
+        private val TAG = ApiManager::class.java.simpleName
 
         var instance: ApiManager = ApiManager()
             private set

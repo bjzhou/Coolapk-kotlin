@@ -4,21 +4,24 @@ import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.support.design.widget.AppBarLayout
 import android.support.design.widget.NavigationView
 import android.support.v4.app.Fragment
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.widget.SearchView
-import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import bjzhou.coolapk.app.R
 import bjzhou.coolapk.app.net.ApkDownloader
 import bjzhou.coolapk.app.ui.base.BaseActivity
 import bjzhou.coolapk.app.ui.fragments.HomepageFragment
+import bjzhou.coolapk.app.ui.fragments.PicturesRootFragment
 import bjzhou.coolapk.app.ui.fragments.SettingsFragment
 import bjzhou.coolapk.app.ui.fragments.UpgradeFragment
 import kotlinx.android.synthetic.main.activity_nav.*
+import kotlinx.android.synthetic.main.app_bar_nav.*
 
 class NavActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
 
@@ -27,7 +30,6 @@ class NavActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListe
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_nav)
-        val toolbar = findViewById(R.id.toolbar) as Toolbar
         setSupportActionBar(toolbar)
         setActionBarTitle(R.string.title_section1)
 
@@ -36,9 +38,8 @@ class NavActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListe
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
 
-        val navigationView = findViewById(R.id.nav_view) as NavigationView
-        navigationView.setNavigationItemSelectedListener(this)
-
+        nav_view.setNavigationItemSelectedListener(this)
+        nav_view.setCheckedItem(R.id.nav_home)
         setFragment(HomepageFragment.newInstance())
         ApkDownloader.instance.checkPermission(this)
     }
@@ -57,6 +58,12 @@ class NavActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListe
     override fun onBackPressed() {
         if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
             drawer_layout.closeDrawer(GravityCompat.START)
+        } else if (currentFragment !is HomepageFragment) {
+            tabs.visibility = View.GONE
+            val lp = toolbar.layoutParams as AppBarLayout.LayoutParams
+            lp.scrollFlags = 0
+            setActionBarTitle(R.string.title_section1)
+            setFragment(HomepageFragment.newInstance())
         } else {
             super.onBackPressed()
         }
@@ -78,6 +85,10 @@ class NavActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListe
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         val fragment: Fragment
 
+        tabs.visibility = View.GONE
+        val lp = toolbar.layoutParams as AppBarLayout.LayoutParams
+        lp.scrollFlags = 0
+
         when (item.itemId) {
             R.id.nav_home -> {
                 fragment = HomepageFragment.newInstance()
@@ -85,13 +96,23 @@ class NavActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListe
                 setFragment(fragment)
             }
             R.id.nav_start_page -> {
-                var intent = Intent(this, PhotoViewer::class.java)
+                val intent = Intent(this, PhotoViewer::class.java)
                 intent.putExtra("startPage", true)
                 startActivity(intent)
+                drawer_layout.closeDrawer(GravityCompat.START)
+                return false
             }
             R.id.nav_pictures -> {
-                intent = Intent(this, PicturesActivity::class.java)
-                startActivity(intent)
+                fragment = PicturesRootFragment.newInstance()
+                fragment.onSetupTabs = {
+                    val layoutParams = toolbar.layoutParams as AppBarLayout.LayoutParams
+                    layoutParams.scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or
+                            AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS
+                    tabs.visibility = View.VISIBLE
+                    tabs.setupWithViewPager(it)
+                }
+                setActionBarTitle(R.string.title_pictures)
+                setFragment(fragment)
             }
             R.id.nav_upgrade -> {
                 fragment = UpgradeFragment.newInstance()

@@ -2,7 +2,6 @@ package bjzhou.coolapk.app.net
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.os.Build
 import android.text.Html
@@ -65,7 +64,6 @@ class ApiManager private constructor() {
                 .addConverterFactory(GsonConverterFactory.create())
                 .baseUrl(Constant.COOL_MARKET_PREURL_V6)
                 .build()
-
         mServiceV6 = retrofit.create(CoolMarketServiceV6::class.java)
     }
 
@@ -132,24 +130,22 @@ class ApiManager private constructor() {
                 }
                 .map { apks ->
                     Log.d(TAG, "apply: onResponse")
-                    apks.map {
+                    apks.filter {
+                        val pi = pm.getPackageInfo(it.apkname, 0)
+                        it.apkversioncode > pi.versionCode
+                    }.map {
+                        val pi = pm.getPackageInfo(it.apkname, 0)
                         val ext = UpgradeApkExtend()
-                        try {
-                            val pi = pm.getPackageInfo(it.apkname, 0)
-                            if (it.apkversioncode > pi.versionCode) {
-                                ext.title = pi.applicationInfo.loadLabel(pm).toString()
-                                ext.logo = pi.applicationInfo.loadIcon(pm)
-                                val info = "<font color=\"#ff35a1d4\">" +
-                                        pi.versionName +
-                                        "</font>" + ">>" +
-                                        "<font color=\"red\">" +
-                                        it.apkversionname + "</font>" +
-                                        "<font color=\"black\">(" + it.apksize + ")</font>"
-                                ext.info = Html.fromHtml(info)
-                                ext.apk = it
-                            }
-                        } catch (ignored: PackageManager.NameNotFoundException) {
-                        }
+                        ext.title = pi.applicationInfo.loadLabel(pm).toString()
+                        ext.logo = pi.applicationInfo.loadIcon(pm)
+                        val info = "<font color=\"#ff35a1d4\">" +
+                                pi.versionName +
+                                "</font>" + ">>" +
+                                "<font color=\"red\">" +
+                                it.apkversionname + "</font>" +
+                                "<font color=\"black\">(" + it.apksize + ")</font>"
+                        ext.info = Html.fromHtml(info)
+                        ext.apk = it
                         ext
                     }
                 }

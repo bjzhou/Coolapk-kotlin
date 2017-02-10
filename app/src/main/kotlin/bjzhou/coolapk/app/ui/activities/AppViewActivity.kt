@@ -14,6 +14,7 @@ class AppViewActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_appview)
         supportActionBar?.elevation = 0f
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         val id = intent.getIntExtra("id", 0)
         setFragment(AppViewFragment.newInstance(id))
     }

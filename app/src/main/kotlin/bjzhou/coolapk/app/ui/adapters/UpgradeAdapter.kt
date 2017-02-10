@@ -7,12 +7,11 @@ import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
 import bjzhou.coolapk.app.R
 import bjzhou.coolapk.app.model.UpgradeApkExtend
 import bjzhou.coolapk.app.net.ApkDownloader
 import bjzhou.coolapk.app.net.DownloadMonitor
+import kotlinx.android.synthetic.main.list_item_upgrade_app.view.*
 import java.lang.ref.WeakReference
 import java.util.*
 
@@ -28,17 +27,20 @@ class UpgradeAdapter(private val mActivity: FragmentActivity) : RecyclerView.Ada
     }
 
     override fun onBindViewHolder(holder: UpgradeAdapter.ViewHolder, position: Int) {
-        holder.titleView.text = mUpgradeList[position].title
-        holder.infoView.text = mUpgradeList[position].info
-        holder.logoView.setImageDrawable(mUpgradeList[position].logo)
-        val changelog = mUpgradeList[position].apk.changelog
+        val upgradeApk = mUpgradeList[position]
+        holder.titleView.text = upgradeApk.title ?: upgradeApk.apk.title ?: "null"
+        holder.infoView.text = upgradeApk.info ?: upgradeApk.apk.info ?: "null"
+        holder.logoView.setImageDrawable(upgradeApk.logo)
+        val changelog = upgradeApk.apk.changelog
         if (!TextUtils.isEmpty(changelog)) {
             holder.changelogView.text = changelog
             holder.changelogView.visibility = View.VISIBLE
+        } else {
+            holder.changelogView.visibility = View.GONE
         }
         holder.upgradeButton.tag = 0
         holder.upgradeButton.text = "升级"
-        val id = mUpgradeList[position].apk.id
+        val id = upgradeApk.apk.id
         if (ApkDownloader.instance.isDownloading(id)) {
             ApkDownloader.instance.setListener(id, DownloadListener(holder.upgradeButton, id))
         }
@@ -110,11 +112,11 @@ class UpgradeAdapter(private val mActivity: FragmentActivity) : RecyclerView.Ada
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        internal var logoView: ImageView = itemView.findViewById(R.id.list_item_icon) as ImageView
-        internal var titleView: TextView = itemView.findViewById(R.id.list_item_title) as TextView
-        internal var infoView: TextView = itemView.findViewById(R.id.list_item_info) as TextView
-        internal var changelogView: TextView = itemView.findViewById(R.id.list_item_description) as TextView
-        internal var upgradeButton: Button = itemView.findViewById(R.id.list_item_upgrade) as Button
+        internal var logoView = itemView.list_item_icon
+        internal var titleView = itemView.list_item_title
+        internal var infoView = itemView.list_item_info
+        internal var changelogView = itemView.list_item_description
+        internal var upgradeButton = itemView.list_item_upgrade
 
         init {
             upgradeButton.setOnClickListener {

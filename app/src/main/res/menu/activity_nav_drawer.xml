@@ -4,18 +4,23 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_home"
+            android:icon="@drawable/ic_home_grey600_24dp"
             android:title="@string/title_section1" />
         <item
             android:id="@+id/nav_start_page"
+            android:icon="@drawable/ic_explore_black_24dp"
             android:title="@string/title_start_page" />
         <item
             android:id="@+id/nav_pictures"
+            android:icon="@drawable/ic_panorama_grey600_24dp"
             android:title="@string/title_pictures" />
         <item
             android:id="@+id/nav_upgrade"
+            android:icon="@drawable/ic_arrow_down_bold_circle_outline_white_24dp"
             android:title="@string/title_section2" />
         <item
             android:id="@+id/nav_settings"
+            android:icon="@drawable/ic_settings_white_24dp"
             android:title="@string/title_section3" />
     </group>
 

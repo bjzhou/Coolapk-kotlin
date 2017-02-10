@@ -14,6 +14,9 @@ open class BaseActivity : AppCompatActivity() {
     private val REQUEST_PERMISSION = Random().nextInt(65535)
     private var mPermissionListener: ((permission: String, succeed: Boolean) -> Any)? = null
 
+    val currentFragment: Fragment
+        get() = supportFragmentManager.findFragmentById(R.id.container)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -21,6 +24,12 @@ open class BaseActivity : AppCompatActivity() {
     fun setFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
                 .replace(R.id.container, fragment)
+                .commit()
+    }
+
+    fun addFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+                .add(R.id.container, fragment)
                 .commit()
     }
 

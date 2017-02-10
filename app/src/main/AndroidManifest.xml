@@ -45,11 +45,6 @@
                 <action android:name="android.intent.action.USER_PRESENT" />
             </intent-filter>
         </receiver>
-
-        <activity
-            android:name=".ui.activities.PicturesActivity"
-            android:label="@string/title_activity_pictures"
-            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

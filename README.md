@@ -3,6 +3,12 @@ Coolapk
 
 酷安开源版
 
+### 酷市场开源版 Demo
+
+[点此下载 Demo apk](https://github.com/bjzhou/Coolapk/raw/master/release/app-release.apk)
+
+![screenshot](https://github.com/bjzhou/Coolapk/raw/master/screenshot/device-2017-02-13-114402.png)
+
 ### 酷市场 V7 版 API 相关
 
 所有接口使用统一的前缀： https://api.coolapk.com/v6/

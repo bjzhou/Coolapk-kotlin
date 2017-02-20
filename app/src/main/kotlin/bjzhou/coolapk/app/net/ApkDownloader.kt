@@ -20,7 +20,6 @@ class ApkDownloader private constructor() {
     fun checkPermission(activity: BaseActivity) {
         activity.checkPermissions({ permission, succeed ->
             mPermissionGranted = succeed
-            mPermissionGranted
         }, Manifest.permission.WRITE_EXTERNAL_STORAGE)
     }
 

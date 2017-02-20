@@ -2,6 +2,7 @@ package bjzhou.coolapk.app.ui.base
 
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
@@ -42,7 +43,13 @@ open class BaseActivity : AppCompatActivity() {
             if (!granted && !shouldRational) {
                 needRequests.add(permission)
             } else if (!granted) {
-                listener(permission, false)
+                Snackbar.make(window.decorView.rootView, getRequestPermissionRationaleMessage(), Snackbar.LENGTH_INDEFINITE)
+                        .setAction(android.R.string.ok, {
+                            needRequests.add(permission)
+                            ActivityCompat.requestPermissions(this, needRequests.toTypedArray(), REQUEST_PERMISSION)
+                        })
+                        .show()
+                return
             } else {
                 listener(permission, true)
             }
@@ -57,6 +64,10 @@ open class BaseActivity : AppCompatActivity() {
                 mPermissionListener?.invoke(permissions[i], grantResults[i] == PackageManager.PERMISSION_GRANTED)
             }
         }
+    }
+
+    protected fun getRequestPermissionRationaleMessage(): CharSequence {
+        return "Need permission granted to continue."
     }
 
     protected fun setActionBarTitle(resId: Int) {

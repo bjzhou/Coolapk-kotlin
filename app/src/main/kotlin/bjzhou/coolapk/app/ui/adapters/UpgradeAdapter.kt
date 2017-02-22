@@ -1,18 +1,24 @@
 package bjzhou.coolapk.app.ui.adapters
 
+import android.app.DownloadManager
+import android.net.Uri
 import android.support.v4.app.FragmentActivity
 import android.support.v7.widget.RecyclerView
 import android.text.TextUtils
-import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import bjzhou.coolapk.app.App
 import bjzhou.coolapk.app.R
+import bjzhou.coolapk.app.model.Apk
 import bjzhou.coolapk.app.model.UpgradeApkExtend
 import bjzhou.coolapk.app.net.ApkDownloader
-import bjzhou.coolapk.app.net.DownloadMonitor
+import bjzhou.coolapk.app.net.DownloadStatus
+import bjzhou.coolapk.app.util.Settings
+import bjzhou.coolapk.app.util.Utils
+import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.list_item_upgrade_app.view.*
-import java.lang.ref.WeakReference
+import java.io.File
 import java.util.*
 
 /**
@@ -20,6 +26,8 @@ import java.util.*
  */
 class UpgradeAdapter(private val mActivity: FragmentActivity) : RecyclerView.Adapter<UpgradeAdapter.ViewHolder>() {
     private var mUpgradeList: List<UpgradeApkExtend> = ArrayList()
+    private var mObserveMap = HashMap<Apk, Disposable>()
+    private val mButtonMap = WeakHashMap<Apk, Button>()
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): UpgradeAdapter.ViewHolder {
         val convertView = mActivity.layoutInflater.inflate(R.layout.list_item_upgrade_app, viewGroup, false)
@@ -40,63 +48,8 @@ class UpgradeAdapter(private val mActivity: FragmentActivity) : RecyclerView.Ada
         }
         holder.upgradeButton.tag = 0
         holder.upgradeButton.text = "升级"
-        val id = upgradeApk.apk.id
-        if (ApkDownloader.instance.isDownloading(id)) {
-            ApkDownloader.instance.setListener(id, DownloadListener(holder.upgradeButton, id))
-        }
-    }
-
-    private class DownloadListener(button: Button, private val id: Int) : DownloadMonitor.DownloadListener {
-
-        init {
-            button.tag = id
-            sButtonMap.put(id, WeakReference(button))
-        }
-
-        private val validButton: Button?
-            get() {
-                val buttonRef = sButtonMap.get(id)
-                if (buttonRef != null) {
-                    val button = buttonRef.get()
-                    if (button != null && button.tag as Int == id) {
-                        return button
-                    }
-                }
-                return null
-            }
-
-        override fun onDownloading(percent: Int) {
-            val button = validButton
-            if (button != null) {
-                button.text = percent.toString() + "%"
-            }
-        }
-
-        override fun onFailure(errCode: Int, vararg err: String) {
-            val button = validButton
-            if (button != null) {
-                button.text = "下载失败,点击重试"
-            }
-        }
-
-        override fun onDownloaded() {
-            val button = validButton
-            if (button != null) {
-                button.text = "正在安装"
-            }
-        }
-
-        override fun onComplete() {
-            val button = validButton
-            if (button != null) {
-                button.text = "安装成功"
-            }
-        }
-
-        companion object {
-
-            private val sButtonMap = SparseArray<WeakReference<Button>>()
-        }
+        holder.upgradeButton.tag = upgradeApk.apk
+        mButtonMap.put(upgradeApk.apk, holder.upgradeButton)
     }
 
     override fun getItemId(position: Int): Long {
@@ -109,6 +62,29 @@ class UpgradeAdapter(private val mActivity: FragmentActivity) : RecyclerView.Ada
 
     fun setUpgradeList(upgradeList: List<UpgradeApkExtend>) {
         mUpgradeList = upgradeList
+        for (upgradeApk in mUpgradeList) {
+            mObserveMap.put(upgradeApk.apk, observeApk(upgradeApk.apk))
+        }
+    }
+
+    private fun observeApk(apk: Apk): Disposable {
+        return ApkDownloader.instance.observeDownloadStatus(apk)
+                .subscribe {
+                    val button = mButtonMap[apk]
+                    if (button != null && button.tag as Apk == apk) {
+                        button.post {
+                            if (it.status == DownloadStatus.STATUS_NOT_STARTED) {
+                                button.text = "升级"
+                            } else if (it.status == DownloadManager.STATUS_FAILED) {
+                                button.text = "下载失败,点击重试"
+                            } else if (it.status == DownloadManager.STATUS_SUCCESSFUL) {
+                                button.text = "下载完成"
+                            } else {
+                                button.text = it.percent.toString() + "%"
+                            }
+                        }
+                    }
+                }
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -120,12 +96,18 @@ class UpgradeAdapter(private val mActivity: FragmentActivity) : RecyclerView.Ada
 
         init {
             upgradeButton.setOnClickListener {
+                if (adapterPosition == RecyclerView.NO_POSITION) return@setOnClickListener
                 val apkExtend = mUpgradeList[adapterPosition]
-                if (!ApkDownloader.instance.isDownloading(apkExtend.apk.id)) {
-                    upgradeButton.text = "正在准备下载"
-                    apkExtend.apk.title = apkExtend.title ?: ""
-                    ApkDownloader.instance.downloadAndInstall(mActivity, apkExtend.apk,
-                            DownloadListener(upgradeButton, apkExtend.apk.id))
+                val status = ApkDownloader.instance.getDownloadStatus(apkExtend.apk)
+                if (status.status == DownloadManager.STATUS_SUCCESSFUL) {
+                    val file = File(Settings.instance.downloadDir, apkExtend.apk.filename)
+                    val pkgInfo = App.context.packageManager.getPackageArchiveInfo(file.absolutePath, 0)
+                    if (file.exists() && pkgInfo != null) {
+                        Utils.installApk(Uri.fromFile(file))
+                    }
+                } else if (status.status == DownloadStatus.STATUS_NOT_STARTED || status.status == DownloadManager.STATUS_FAILED) {
+                    ApkDownloader.instance.download(apkExtend.apk)
+                    mObserveMap.put(apkExtend.apk, observeApk(apkExtend.apk))
                 }
             }
         }

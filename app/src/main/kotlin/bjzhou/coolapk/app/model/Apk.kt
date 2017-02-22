@@ -2,6 +2,8 @@ package bjzhou.coolapk.app.model
 
 import android.graphics.Bitmap
 import android.text.Spanned
+import bjzhou.coolapk.app.util.Constant
+import bjzhou.coolapk.app.util.StringHelper
 
 /**
  * Created by bjzhou on 14-7-29.
@@ -46,4 +48,42 @@ class Apk {
     var info: Spanned? = null
     var logoBitmap: Bitmap? = null
     var changelog: String = ""
+
+    var downloadId = -1L
+
+    val filename: String
+        get() = getFileName(apkname, apkversionname)
+
+    val url: String
+        get() {
+            val sid = StringHelper.getVStr("APK", StringHelper.getN27(id), Constant.APP_COOKIE_KEY, 6).trim { it <= ' ' }
+            return String.format(Constant.COOLAPK_PREURL + Constant.METHOD_ON_DOWNLOAD_APK, Constant.API_KEY, sid)
+        }
+
+    override fun hashCode(): Int {
+        var result = id
+        result = 31 * result + apkname.hashCode()
+        result = 31 * result + apkversioncode
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other?.javaClass != javaClass) return false
+
+        other as Apk
+
+        if (id != other.id) return false
+        if (apkname != other.apkname) return false
+        if (apkversioncode != other.apkversioncode) return false
+
+        return true
+    }
+
+
+    companion object {
+        fun getFileName(packageName: String, versionName: String): String {
+            return packageName + "_" + versionName + ".apk"
+        }
+    }
 }

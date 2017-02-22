@@ -16,6 +16,10 @@
 
 package bjzhou.coolapk.app.util
 
+import android.content.Context
+import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.Uri
 import android.os.Build
 import android.preference.PreferenceManager
 import android.text.Html
@@ -52,4 +56,17 @@ object Utils {
             sp.edit().putString("uuid", uuid).apply()
             return uuid
         }
+
+    val networkConnected: Boolean
+        get() {
+            val cm = App.context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            return cm.activeNetworkInfo != null && cm.activeNetworkInfo.isConnectedOrConnecting
+        }
+
+    fun installApk(uri: Uri) {
+        val intent = Intent(Intent.ACTION_VIEW)
+        intent.setDataAndType(uri, "application/vnd.android.package-archive")
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        App.context.startActivity(intent)
+    }
 }

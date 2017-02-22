@@ -1,11 +1,9 @@
 package bjzhou.coolapk.app.ui.fragments
 
-import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -38,6 +36,13 @@ class UpgradeFragment : Fragment() {
         return rootView
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        obtainUpgradeVersions()
+        view?.swipeRefresh?.isRefreshing = true
+    }
+
     private fun obtainUpgradeVersions() {
         ApiManager.instance.obtainUpgradeVersions(activity).doFinally { view?.swipeRefresh?.isRefreshing = false }.subscribe { upgradeApkExtends ->
             mAdapter.setUpgradeList(upgradeApkExtends)
@@ -45,22 +50,8 @@ class UpgradeFragment : Fragment() {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        obtainUpgradeVersions()
-        view.swipeRefresh.isRefreshing = true
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == INSTALL_REQUEST_CODE) {
-            Log.d(TAG, "resultCode:" + resultCode)
-            obtainUpgradeVersions()
-        }
-    }
-
     companion object {
 
-        val INSTALL_REQUEST_CODE = 101
         private val TAG = "UpgradeFragment"
 
         fun newInstance(): UpgradeFragment {

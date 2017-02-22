@@ -1,8 +1,9 @@
 package bjzhou.coolapk.app.ui.fragments
 
+import android.app.DownloadManager
 import android.content.Intent
-import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.text.Html
@@ -11,22 +12,19 @@ import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.RatingBar
-import android.widget.TextView
-import android.widget.Toast
-
-import com.squareup.picasso.Picasso
-
+import android.widget.*
+import bjzhou.coolapk.app.App
 import bjzhou.coolapk.app.R
 import bjzhou.coolapk.app.model.ApkField
 import bjzhou.coolapk.app.net.ApiManager
 import bjzhou.coolapk.app.net.ApkDownloader
-import bjzhou.coolapk.app.net.DownloadMonitor
+import bjzhou.coolapk.app.net.DownloadStatus
 import bjzhou.coolapk.app.ui.activities.PhotoViewer
+import bjzhou.coolapk.app.util.Settings
 import bjzhou.coolapk.app.util.TimeUtility
-import io.reactivex.functions.Consumer
+import bjzhou.coolapk.app.util.Utils
+import com.squareup.picasso.Picasso
+import java.io.File
 
 /**
  * Created by bjzhou on 14-7-29.
@@ -35,9 +33,7 @@ class AppViewFragment : Fragment(), View.OnClickListener {
     private var mId: Int = 0
 
     private var mField: ApkField? = null
-
-    // 0:not install, 1: installed, 2: should update, -1: downloadAndInstall failed, -2: install failed
-    private var mInstallStatus = 0
+    private var mClickStatus = CLICK_DOWNLOAD
 
     private val mScreenshotId = intArrayOf(R.id.app_view_screenshot0, R.id.app_view_screenshot1, R.id.app_view_screenshot2, R.id.app_view_screenshot3, R.id.app_view_screenshot4, R.id.app_view_screenshot5)
 
@@ -55,7 +51,6 @@ class AppViewFragment : Fragment(), View.OnClickListener {
     private lateinit var mUpdateView: TextView
     private lateinit var mRemarkView: TextView
     private lateinit var mIntroduceView: TextView
-    private var downloadListener: DownloadMonitor.DownloadListener? = null
     private lateinit var mCommentButton: ImageButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,27 +84,6 @@ class AppViewFragment : Fragment(), View.OnClickListener {
         mIntroduceView = rootView.findViewById(R.id.app_view_introduce) as TextView
 
         mDownloadButton.setOnClickListener(this)
-        downloadListener = object : DownloadMonitor.DownloadListener {
-            override fun onDownloading(percent: Int) {
-                //mDownloadButton.setText(percent + "%");
-            }
-
-            override fun onFailure(errCode: Int, vararg err: String) {
-                when (errCode) {
-                    DownloadMonitor.DownloadListener.DOWNLOAD_FAIL -> mInstallStatus = -1
-                }//mDownloadButton.setText("下载失败,点击重试");
-            }
-
-            override fun onDownloaded() {
-                if (activity == null) return
-                Toast.makeText(activity, "正在安装", Toast.LENGTH_SHORT).show()
-            }
-
-            override fun onComplete() {
-                mInstallStatus = 1
-                //mDownloadButton.setText("安装成功,点击打开");
-            }
-        }
         mCommentButton.setOnClickListener(this)
 
         ApiManager.instance.obtainApkField(mId).subscribe { apkField -> onObtainApkField(apkField) }
@@ -119,22 +93,49 @@ class AppViewFragment : Fragment(), View.OnClickListener {
     override fun onClick(v: View) {
 
         if (v === mDownloadButton) {
-
-            if (mInstallStatus == 1) {
+            if (mClickStatus == CLICK_OPEN) {
                 val intent = activity.packageManager.getLaunchIntentForPackage(mField?.meta?.apkname)
                 startActivity(intent)
-                return
             }
-
-            //mDownloadButton.setText("正在准备下载");
-            ApkDownloader.instance.downloadAndInstall(activity, mField?.meta, downloadListener)
-
+            if (mClickStatus == CLICK_INSTALL) {
+                val file = File(Settings.instance.downloadDir, mField?.meta?.filename)
+                val pkgInfo = App.context.packageManager.getPackageArchiveInfo(file.absolutePath, 0)
+                if (file.exists() && pkgInfo != null) {
+                    Utils.installApk(Uri.fromFile(file))
+                } else {
+                    downloadApk()
+                }
+            }
+            if (mClickStatus == CLICK_DOWNLOAD) {
+                downloadApk()
+            }
         } else {
-
             activity.supportFragmentManager.beginTransaction()
                     .add(R.id.container, CommentFragment.newInstance(mId), "Comment")
                     .addToBackStack("Comment")
                     .commit()
+        }
+    }
+
+    private fun downloadApk() {
+        mField?.meta?.let {
+            val apk = it
+            ApkDownloader.instance.download(apk)
+            ApkDownloader.instance.observeDownloadStatus(apk)
+                    .subscribe {
+                        when (it.status) {
+                            DownloadManager.STATUS_FAILED -> {
+                                Toast.makeText(App.context, "下载失败,点击重试", Toast.LENGTH_SHORT).show()
+                                mClickStatus = CLICK_DOWNLOAD
+                            }
+                            DownloadManager.STATUS_SUCCESSFUL -> {
+                                mClickStatus = CLICK_INSTALL
+                            }
+                            else -> {
+                                mClickStatus = CLICK_DO_NOTHING
+                            }
+                        }
+                    }
         }
     }
 
@@ -160,23 +161,26 @@ class AppViewFragment : Fragment(), View.OnClickListener {
         mAppTitleView.text = mField?.meta?.title
         mRatingBar.rating = mField?.meta?.score ?: 0.toFloat()
         mInfoView.text = mField?.meta?.apkversionname
-        if (ApkDownloader.instance.isDownloading(mId)) {
-            ApkDownloader.instance.setListener(mId, downloadListener)
+        val installedVersion = getInstalledVersion(mField?.meta?.apkname)
+        if (installedVersion == -1) {
+            mClickStatus = CLICK_DOWNLOAD
         } else {
-            val installedVersion = getInstalledVersion(mField?.meta?.apkname)
-            if (installedVersion == -1) {
-                mInstallStatus = 0
-                //mDownloadButton.setText("下载(" + mField.getMeta().getApksize() + ")");
+            val version = mField?.meta?.apkversioncode ?: 0
+            if (version > installedVersion) {
+                mClickStatus = CLICK_DOWNLOAD
             } else {
-                val version = mField?.meta?.apkversioncode ?: 0
-                if (version > installedVersion) {
-                    mInstallStatus = 2
-                    //mDownloadButton.setText("升级(" + mField.getMeta().getApksize() + ")");
-                } else {
-                    mInstallStatus = 1
-                    //mDownloadButton.setText("已安装");
-                    mDownloadButton.setImageResource(R.drawable.ic_stat_ok)
-                }
+                mClickStatus = CLICK_OPEN
+                mDownloadButton.setImageResource(R.drawable.ic_stat_ok)
+            }
+        }
+        if (mClickStatus == CLICK_DOWNLOAD) {
+            val status = ApkDownloader.instance.getDownloadStatus(mField?.meta)
+            if (status.status == DownloadStatus.STATUS_NOT_STARTED) {
+                mClickStatus = CLICK_DOWNLOAD
+            } else if (status.status == DownloadManager.STATUS_SUCCESSFUL) {
+                mClickStatus = CLICK_INSTALL
+            } else if (status.status != DownloadManager.STATUS_FAILED) {
+                mClickStatus = CLICK_DO_NOTHING
             }
         }
 
@@ -220,6 +224,10 @@ class AppViewFragment : Fragment(), View.OnClickListener {
     companion object {
 
         private val TAG = "AppViewFragment"
+        private val CLICK_DOWNLOAD = 0
+        private val CLICK_INSTALL = 1
+        private val CLICK_OPEN = 2
+        private val CLICK_DO_NOTHING = 3
 
         fun newInstance(id: Int): AppViewFragment {
             val fragment = AppViewFragment()

@@ -4,9 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.ACCESS_SUPERUSER" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".App"
@@ -16,10 +14,6 @@
         android:theme="@style/AppTheme">
         <activity android:name=".ui.activities.PhotoViewer" />
         <activity android:name=".ui.activities.AppViewActivity" />
-
-        <service
-            android:name=".services.UpgradeService"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <activity
             android:name=".ui.activities.NavActivity"
@@ -38,13 +32,6 @@
                 android:resource="@xml/searchable" />
         </activity>
 
-        <receiver android:name=".receivers.BootReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-                <action android:name="android.intent.action.USER_PRESENT" />
-            </intent-filter>
-        </receiver>
     </application>
 
 </manifest>

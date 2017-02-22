@@ -10,7 +10,6 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import bjzhou.coolapk.app.R
 import bjzhou.coolapk.app.model.Apk
 import bjzhou.coolapk.app.net.ApiManager
@@ -120,7 +119,7 @@ class HomepageFragment : Fragment(), Observer<List<Apk>> {
     }
 
     override fun onError(e: Throwable) {
-        Toast.makeText(activity, e.toString(), Toast.LENGTH_SHORT).show()
+        e.printStackTrace()
         onComplete()
     }
 

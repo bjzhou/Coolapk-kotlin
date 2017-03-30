@@ -17,7 +17,7 @@
     
     <color name="theme_default_primary">#4caf50</color>
     <color name="theme_default_primary_dark">#388e3c</color>
-    <color name="accent">#009688</color>
+    <color name="accent">#ff50af</color>
     <color name="transparent">#0000</color>
 
 </resources>

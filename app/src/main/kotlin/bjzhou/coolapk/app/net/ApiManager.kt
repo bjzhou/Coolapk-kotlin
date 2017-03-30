@@ -128,6 +128,7 @@ class ApiManager private constructor() {
                 .concatMap {
                     rxApi(mService.obtainUpgradeVersions(it), emptyList())
                 }
+                .observeOn(Schedulers.io())
                 .map { apks ->
                     Log.d(TAG, "apply: onResponse")
                     apks.filter {

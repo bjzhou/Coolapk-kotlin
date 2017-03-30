@@ -1,95 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/view_app_header"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/theme_default_primary"
-    android:orientation="horizontal"
     android:padding="8.0dip">
 
     <ImageView
         android:id="@+id/app_header_icon"
-        android:layout_width="60.0dip"
-        android:layout_height="60.0dip"
-        android:layout_marginTop="0.0dip"
-        android:src="@drawable/ic_default_thumbnail"/>
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:src="@drawable/ic_default_thumbnail"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:id="@+id/list_item_layoutCenter"
-        android:layout_width="fill_parent"
+    <TextView
+        android:id="@+id/app_header_title"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="8.0dip"
-        android:layout_toRightOf="@+id/app_header_icon"
-        android:orientation="vertical">
+        android:layout_marginStart="8dp"
+        android:ellipsize="marquee"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:marqueeRepeatLimit="1"
+        android:maxLines="1"
+        android:scrollHorizontally="true"
+        android:textColor="@color/app_header_title"
+        android:textSize="18.0dip"
+        android:textStyle="bold"
+        app:layout_constraintLeft_toRightOf="@+id/app_header_icon"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/app_header_icon"
+        tools:text="12121212121" />
 
-        <TextView
-            android:id="@+id/app_header_title"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:ellipsize="marquee"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:marqueeRepeatLimit="1"
-            android:scrollHorizontally="true"
-            android:singleLine="true"
-            android:textColor="@color/app_header_title"
-            android:textSize="18.0dip"
-            android:textStyle="bold"/>
+    <RatingBar
+        android:id="@+id/app_header_ratingStar"
+        style="?attr/ratingBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2.0dip"
+        android:layout_marginTop="2.0dip"
+        android:isIndicator="true"
+        android:rating="0"
+        app:layout_constraintLeft_toLeftOf="@id/app_header_title"
+        app:layout_constraintTop_toBottomOf="@+id/app_header_title"
+        tools:rating="3" />
 
-        <RelativeLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+    <TextView
+        android:id="@+id/app_header_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/app_header_info"
+        android:textSize="12.0dip"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="@id/app_header_title"
+        app:layout_constraintTop_toBottomOf="@+id/app_header_ratingStar"
+        tools:text="adsasdadad" />
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_centerVertical="true"
-                android:layout_marginRight="8.0dip"
-                android:layout_alignParentStart="true"
-                android:orientation="vertical">
+    <ImageButton
+        android:id="@+id/app_header_comment"
+        style="?attr/actionButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3.0dip"
+        android:src="@drawable/ic_action_comment"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/app_header_download" />
 
-                <RatingBar
-                    android:id="@+id/app_header_ratingStar"
-                    style="?android:attr/ratingBarStyleSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="2.0dip"
-                    android:layout_marginTop="2.0dip"
-                    android:isIndicator="true"
-                    android:rating="0.0"/>
-
-                <TextView
-                    android:id="@+id/app_header_info"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:singleLine="true"
-                    android:textColor="@color/app_header_info"
-                    android:textSize="12.0dip"/>
-            </LinearLayout>
-
-            <ImageButton
-                android:id="@+id/app_header_comment"
-                style="?android:attr/actionButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="3.0dip"
-                android:textColor="@color/white"
-                android:src="@drawable/ic_action_comment"
-                android:layout_toLeftOf="@+id/app_header_download"/>
-
-            <ImageButton
-                android:id="@+id/app_header_download"
-                style="?android:attr/actionButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/white"
-                android:src="@drawable/ic_action_download"
-                android:layout_alignParentEnd="true"/>
-        </RelativeLayout>
-    </LinearLayout>
-</RelativeLayout>
+    <ImageButton
+        android:id="@+id/app_header_download"
+        style="?attr/actionButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:src="@drawable/ic_action_download"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
+</android.support.constraint.ConstraintLayout>

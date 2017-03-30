@@ -1,96 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent"
-              android:orientation="vertical">
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="8.0dip">
 
-    <RelativeLayout
-        android:layout_width="fill_parent"
+    <ImageView
+        android:id="@+id/list_item_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="2dp"
+        android:src="@drawable/ic_default_avatar"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/list_item_title"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="8.0dip">
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:ellipsize="end"
+        android:lineSpacingMultiplier="1.2"
+        android:maxLines="1"
+        android:textColor="@color/comment_title"
+        android:textSize="16.0dip"
+        android:textStyle="bold"
+        app:layout_constraintLeft_toRightOf="@+id/list_item_icon"
+        app:layout_constraintRight_toLeftOf="@+id/list_item_time"
+        app:layout_constraintTop_toTopOf="@+id/list_item_icon"
+        tools:text="10000000000000000" />
 
-        <ImageView
-            android:id="@+id/list_item_icon"
-            android:layout_width="40.0dip"
-            android:layout_height="40.0dip"
-            android:layout_marginTop="2.0dip"
-            android:src="@drawable/ic_default_avatar"/>
+    <TextView
+        android:id="@+id/list_item_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:lineSpacingMultiplier="1.2"
+        android:maxLines="1"
+        android:textColor="@color/comment_time"
+        android:textSize="12.0dip"
+        app:layout_constraintRight_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/list_item_icon"
+        tools:text="111111" />
 
-        <LinearLayout
-            android:id="@+id/list_item_layoutCenter"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8.0dip"
-            android:layout_toRightOf="@+id/list_item_icon"
-            android:orientation="vertical">
+    <TextView
+        android:id="@+id/list_item_message"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:autoLink="web"
+        android:lineSpacingMultiplier="1.2"
+        android:linksClickable="false"
+        android:textColor="@color/comment_message"
+        android:textColorLink="@color/link_text_color"
+        android:textSize="14.0dip"
+        app:layout_constraintLeft_toLeftOf="@+id/list_item_title"
+        app:layout_constraintTop_toBottomOf="@+id/list_item_title"
+        tools:text="222222222222222" />
 
-            <RelativeLayout
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/list_item_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_centerVertical="true"
-                    android:layout_gravity="center"
-                    android:layout_toLeftOf="@+id/list_item_time"
-                    android:ellipsize="end"
-                    android:lineSpacingMultiplier="1.2"
-                    android:singleLine="true"
-                    android:textColor="@color/comment_title"
-                    android:textSize="16.0dip"
-                    android:textStyle="bold"/>
-
-                <TextView
-                    android:id="@+id/list_item_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:layout_gravity="center"
-                    android:ellipsize="end"
-                    android:lineSpacingMultiplier="1.2"
-                    android:singleLine="true"
-                    android:textColor="@color/comment_time"
-                    android:textSize="12.0dip"/>
-            </RelativeLayout>
-
-            <TextView
-                android:id="@+id/list_item_message"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="top"
-                android:autoLink="web"
-                android:lineSpacingMultiplier="1.2"
-                android:linksClickable="false"
-                android:textColor="@color/comment_message"
-                android:textColorLink="@color/link_text_color"
-                android:textSize="14.0dip"/>
-
-            <RelativeLayout
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/list_item_reply_num"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:drawableLeft="@drawable/ic_menu_reply_big"
-                    android:drawablePadding="5dp"
-                    android:ellipsize="end"
-                    android:lineSpacingMultiplier="1.2"
-                    android:singleLine="true"
-                    android:textColor="@color/comment_info"
-                    android:textSize="12.0dip"/>
-            </RelativeLayout>
-        </LinearLayout>
-    </RelativeLayout>
-</LinearLayout>
+    <TextView
+        android:id="@+id/list_item_reply_num"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="?android:attr/selectableItemBackground"
+        android:drawablePadding="5dp"
+        android:drawableStart="@drawable/ic_menu_reply_big"
+        android:ellipsize="end"
+        android:lineSpacingMultiplier="1.2"
+        android:maxLines="1"
+        android:textColor="@color/comment_info"
+        android:textSize="12.0dip"
+        app:layout_constraintRight_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/list_item_message" />
+</android.support.constraint.ConstraintLayout>

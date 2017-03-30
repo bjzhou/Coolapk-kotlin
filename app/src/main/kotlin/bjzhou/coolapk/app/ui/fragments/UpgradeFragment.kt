@@ -4,13 +4,16 @@ import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import bjzhou.coolapk.app.R
 import bjzhou.coolapk.app.net.ApiManager
 import bjzhou.coolapk.app.ui.adapters.UpgradeAdapter
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_upgrade.view.*
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by bjzhou on 14-8-13.
@@ -39,15 +42,23 @@ class UpgradeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
-        obtainUpgradeVersions()
-        view?.swipeRefresh?.isRefreshing = true
+        view?.postDelayed({
+            obtainUpgradeVersions()
+            view?.swipeRefresh?.isRefreshing = true
+        }, 300)
     }
 
     private fun obtainUpgradeVersions() {
-        ApiManager.instance.obtainUpgradeVersions(activity).doFinally { view?.swipeRefresh?.isRefreshing = false }.subscribe { upgradeApkExtends ->
-            mAdapter.setUpgradeList(upgradeApkExtends)
-            mAdapter.notifyDataSetChanged()
-        }
+        ApiManager.instance.obtainUpgradeVersions(activity)
+                .delay(500, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .doFinally {
+                    view?.swipeRefresh?.isRefreshing = false
+                }
+                .subscribe { upgradeApkExtends ->
+                    mAdapter.setUpgradeList(upgradeApkExtends)
+                    mAdapter.notifyDataSetChanged()
+                }
     }
 
     companion object {

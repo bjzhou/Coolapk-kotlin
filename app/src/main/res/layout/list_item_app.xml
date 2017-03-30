@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/item_background"
@@ -7,20 +9,24 @@
 
     <ImageView
         android:id="@+id/list_item_icon"
-        android:layout_width="@dimen/app_icon_size"
-        android:layout_height="@dimen/app_icon_size"
-        android:layout_marginTop="2.0dip"
-        android:src="@drawable/ic_default_thumbnail"/>
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="2dp"
+        android:src="@drawable/ic_default_thumbnail"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/list_item_layoutCenter"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
         android:id="@+id/list_item_layoutCenter"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="8.0dip"
-        android:layout_marginRight="8.0dip"
-        android:layout_toLeftOf="@+id/list_item_layoutRight"
-        android:layout_toRightOf="@+id/list_item_icon"
-        android:orientation="vertical">
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:orientation="vertical"
+        app:layout_constraintLeft_toRightOf="@+id/list_item_icon"
+        app:layout_constraintRight_toLeftOf="@+id/list_item_layoutRight"
+        app:layout_constraintTop_toTopOf="@+id/list_item_icon">
 
         <TextView
             android:id="@+id/list_item_title"
@@ -32,7 +38,7 @@
             android:singleLine="true"
             android:text="testApkTitle"
             android:textColor="@color/app_title"
-            android:textSize="16.0dip"/>
+            android:textSize="16.0dip" />
 
         <TextView
             android:id="@+id/list_item_info"
@@ -44,7 +50,7 @@
             android:singleLine="true"
             android:text="testApkInfo"
             android:textColor="@color/app_info"
-            android:textSize="12.0dip"/>
+            android:textSize="12.0dip" />
 
         <TextView
             android:id="@+id/list_item_description"
@@ -57,37 +63,40 @@
             android:text="testApkDescription"
             android:textColor="@color/app_description"
             android:textSize="12.0dip"
-            android:visibility="gone"/>
+            android:visibility="gone" />
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/list_item_layoutRight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
         android:gravity="center"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@+id/list_item_icon"
+        app:layout_constraintLeft_toRightOf="@+id/list_item_layoutCenter"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/list_item_icon">
 
         <TextView
             android:id="@+id/list_item_downnum"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:gravity="center"
             android:lineSpacingMultiplier="1.2"
-            android:singleLine="true"
+            android:maxLines="1"
             android:text="100"
             android:textColor="@color/app_num"
-            android:textSize="10.0dip"/>
+            android:textSize="10.0dip" />
 
         <RatingBar
             android:id="@+id/list_item_ratingStar"
-            style="?android:attr/ratingBarStyleSmall"
+            style="?attr/ratingBarStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:isIndicator="true"
             android:numStars="5"
-            android:rating="0.0"/>
+            android:rating="0.0"
+            tools:rating="3" />
     </LinearLayout>
-</RelativeLayout>
+</android.support.constraint.ConstraintLayout>

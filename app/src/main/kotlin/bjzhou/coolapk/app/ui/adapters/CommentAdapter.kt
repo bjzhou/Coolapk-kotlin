@@ -95,7 +95,7 @@ class CommentAdapter(private val mActivity: FragmentActivity, private val mListV
         return view
     }
 
-    override fun getChildView(groupPosition: Int, childPosition: Int, isLastChild: Boolean, convertView: View, parent: ViewGroup): View? {
+    override fun getChildView(groupPosition: Int, childPosition: Int, isLastChild: Boolean, convertView: View?, parent: ViewGroup): View? {
         if (mCommentList[groupPosition].subrows != null && mCommentList[groupPosition].subrows?.size ?: 0 > 0) {
             val holder: ReplyViewHolder
             var view: View? = convertView

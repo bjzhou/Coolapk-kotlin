@@ -64,6 +64,7 @@ class NavActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListe
             lp.scrollFlags = 0
             setActionBarTitle(R.string.title_section1)
             setFragment(HomepageFragment.newInstance())
+            nav_view.setCheckedItem(R.id.nav_home)
         } else {
             super.onBackPressed()
         }

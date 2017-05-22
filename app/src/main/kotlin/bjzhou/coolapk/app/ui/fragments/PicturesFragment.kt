@@ -44,7 +44,7 @@ class PicturesFragment : Fragment() {
     }
 
     private fun findViews(parent: View) {
-        mPicturesView = parent.findViewById(R.id.picturesView) as RecyclerView
+        mPicturesView = parent.findViewById(R.id.picturesView)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -82,7 +82,7 @@ class PicturesFragment : Fragment() {
     }
 
     internal inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val image: ImageView = itemView.findViewById(R.id.image) as ImageView
+        val image: ImageView = itemView.findViewById(R.id.image)
     }
 
     companion object {

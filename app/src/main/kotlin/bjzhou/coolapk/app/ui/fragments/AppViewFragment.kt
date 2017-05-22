@@ -63,25 +63,25 @@ class AppViewFragment : Fragment(), View.OnClickListener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_app_view, container, false)
-        val headView = rootView.findViewById(R.id.app_header)
+        val headView: View = rootView.findViewById(R.id.app_header)
 
-        mAppIconView = headView.findViewById(R.id.app_header_icon) as ImageView
-        mAppTitleView = headView.findViewById(R.id.app_header_title) as TextView
-        mRatingBar = headView.findViewById(R.id.app_header_ratingStar) as RatingBar
-        mInfoView = headView.findViewById(R.id.app_header_info) as TextView
-        mDownloadButton = headView.findViewById(R.id.app_header_download) as ImageButton
-        mCommentButton = headView.findViewById(R.id.app_header_comment) as ImageButton
+        mAppIconView = headView.findViewById(R.id.app_header_icon)
+        mAppTitleView = headView.findViewById(R.id.app_header_title)
+        mRatingBar = headView.findViewById(R.id.app_header_ratingStar)
+        mInfoView = headView.findViewById(R.id.app_header_info)
+        mDownloadButton = headView.findViewById(R.id.app_header_download)
+        mCommentButton = headView.findViewById(R.id.app_header_comment)
 
         for (i in 0..5) {
-            mScreenshotView[i] = rootView.findViewById(mScreenshotId[i]) as ImageView
+            mScreenshotView[i] = rootView.findViewById(mScreenshotId[i])
         }
 
-        mLanguageView = rootView.findViewById(R.id.app_view_meta1) as TextView
-        mApkSizeView = rootView.findViewById(R.id.app_view_meta2) as TextView
-        mRomView = rootView.findViewById(R.id.app_view_meta3) as TextView
-        mUpdateView = rootView.findViewById(R.id.app_view_meta4) as TextView
-        mRemarkView = rootView.findViewById(R.id.app_view_remark) as TextView
-        mIntroduceView = rootView.findViewById(R.id.app_view_introduce) as TextView
+        mLanguageView = rootView.findViewById(R.id.app_view_meta1)
+        mApkSizeView = rootView.findViewById(R.id.app_view_meta2)
+        mRomView = rootView.findViewById(R.id.app_view_meta3)
+        mUpdateView = rootView.findViewById(R.id.app_view_meta4)
+        mRemarkView = rootView.findViewById(R.id.app_view_remark)
+        mIntroduceView = rootView.findViewById(R.id.app_view_introduce)
 
         mDownloadButton.setOnClickListener(this)
         mCommentButton.setOnClickListener(this)

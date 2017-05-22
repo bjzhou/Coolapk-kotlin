@@ -67,11 +67,11 @@ class ApkListAdapter(activity: FragmentActivity) : RecyclerView.Adapter<ApkListA
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
-        var logoView: ImageView = itemView.findViewById(R.id.list_item_icon) as ImageView
-        var titleView: TextView = itemView.findViewById(R.id.list_item_title) as TextView
-        var infoView: TextView = itemView.findViewById(R.id.list_item_info) as TextView
-        var downnumView: TextView = itemView.findViewById(R.id.list_item_downnum) as TextView
-        var ratingBar: RatingBar = itemView.findViewById(R.id.list_item_ratingStar) as RatingBar
+        var logoView: ImageView = itemView.findViewById(R.id.list_item_icon)
+        var titleView: TextView = itemView.findViewById(R.id.list_item_title)
+        var infoView: TextView = itemView.findViewById(R.id.list_item_info)
+        var downnumView: TextView = itemView.findViewById(R.id.list_item_downnum)
+        var ratingBar: RatingBar = itemView.findViewById(R.id.list_item_ratingStar)
 
         init {
             itemView.setOnClickListener(this)

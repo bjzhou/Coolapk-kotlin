@@ -25,7 +25,7 @@ class PhotoViewer : Activity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_photoviewer)
-        val pager = findViewById(R.id.photo_viewer) as ViewPager
+        val pager: ViewPager = findViewById(R.id.photo_viewer)
 
         val intent = intent
         val startPage = intent.getBooleanExtra("startPage", false)

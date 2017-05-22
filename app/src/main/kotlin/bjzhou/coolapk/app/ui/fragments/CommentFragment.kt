@@ -37,7 +37,7 @@ class CommentFragment : Fragment(), AbsListView.OnScrollListener, Observer<List<
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_comment, container, false)
 
-        mListView = rootView.findViewById(R.id.comment_listView) as ExpandableListView
+        mListView = rootView.findViewById(R.id.comment_listView)
         mListView.setOnScrollListener(this)
         mAdapter = CommentAdapter(activity, mListView)
         mAdapter.setCommentList(mCommentList)

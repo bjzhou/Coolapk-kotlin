@@ -54,7 +54,7 @@ class HomepageFragment : Fragment(), Observer<List<Apk>> {
 
         mInsets = resources.getDimension(R.dimen.card_insets).toInt()
 
-        mRecyclerView = rootView.findViewById(R.id.apkList) as RecyclerView
+        mRecyclerView = rootView.findViewById(R.id.apkList)
         mLayoutManager = LinearLayoutManager(activity)
         mRecyclerView.layoutManager = mLayoutManager
         mRecyclerView.itemAnimator = DefaultItemAnimator()
@@ -70,7 +70,7 @@ class HomepageFragment : Fragment(), Observer<List<Apk>> {
         mAdapter = ApkListAdapter(activity)
         mRecyclerView.adapter = mAdapter
 
-        mSwipeRefreshLayout = rootView.findViewById(R.id.swipeRefresh) as SwipeRefreshLayout
+        mSwipeRefreshLayout = rootView.findViewById(R.id.swipeRefresh)
         mSwipeRefreshLayout.setColorSchemeResources(R.color.theme_default_primary)
         mSwipeRefreshLayout.setOnRefreshListener {
             mLoadMoreDecoration.reset()

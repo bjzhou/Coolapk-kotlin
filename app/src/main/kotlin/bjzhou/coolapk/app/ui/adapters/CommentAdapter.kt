@@ -63,12 +63,12 @@ class CommentAdapter(private val mActivity: FragmentActivity, private val mListV
         if (view == null) {
             holder = ViewHolder()
             view = mActivity.layoutInflater.inflate(R.layout.list_item_comment, parent, false)
-            holder.userIconView = view.findViewById(R.id.list_item_icon) as ImageView
-            holder.titleView = view.findViewById(R.id.list_item_title) as TextView
-            holder.timeView = view.findViewById(R.id.list_item_time) as TextView
-            holder.msgView = view.findViewById(R.id.list_item_message) as TextView
+            holder.userIconView = view.findViewById(R.id.list_item_icon)
+            holder.titleView = view.findViewById(R.id.list_item_title)
+            holder.timeView = view.findViewById(R.id.list_item_time)
+            holder.msgView = view.findViewById(R.id.list_item_message)
             //holder.infoView = (TextView) convertView.findViewById(R.id.list_item_info);
-            holder.replyNumView = view.findViewById(R.id.list_item_reply_num) as TextView
+            holder.replyNumView = view.findViewById(R.id.list_item_reply_num)
 
             view.tag = holder
         } else {
@@ -102,8 +102,8 @@ class CommentAdapter(private val mActivity: FragmentActivity, private val mListV
             if (view == null) {
                 holder = ReplyViewHolder()
                 view = mActivity.layoutInflater.inflate(R.layout.list_item_comment_reply, parent, false)
-                holder.userIconView = view.findViewById(R.id.list_item_icon) as ImageView
-                holder.msgView = view.findViewById(R.id.list_item_message) as TextView
+                holder.userIconView = view.findViewById(R.id.list_item_icon)
+                holder.msgView = view.findViewById(R.id.list_item_message)
 
                 view.tag = holder
             } else {

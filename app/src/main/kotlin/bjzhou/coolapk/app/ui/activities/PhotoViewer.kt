@@ -11,8 +11,12 @@ import android.view.Window
 import android.view.WindowManager
 import android.widget.Toast
 import bjzhou.coolapk.app.R
+import bjzhou.coolapk.app.model.CardEntity
 import bjzhou.coolapk.app.net.ApiManager
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.launch
 import uk.co.senab.photoview.PhotoView
 
 /**
@@ -30,8 +34,8 @@ class PhotoViewer : Activity() {
         val intent = intent
         val startPage = intent.getBooleanExtra("startPage", false)
         if (startPage) {
-            ApiManager.instance.init().subscribe({ entities ->
-                for (entity in entities) {
+            ApiManager.instance.mServiceV6.init().enqueue {
+                for (entity in it) {
                     Log.d(TAG, "accept: " + entity)
                     if ("imageCard" == entity.entityType) {
                         val screenshots = arrayOf(entity.pic)
@@ -39,7 +43,7 @@ class PhotoViewer : Activity() {
                         pager.currentItem = 0
                     }
                 }
-            }) { throwable -> Toast.makeText(this@PhotoViewer, throwable.toString(), Toast.LENGTH_SHORT).show() }
+            }
         } else {
             val screenshots = intent.getStringArrayExtra("screenshots")
             val index = intent.getIntExtra("index", 0)

@@ -4,17 +4,30 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import bjzhou.coolapk.app.model.Apk
 import bjzhou.coolapk.app.net.ApiManager
-import io.reactivex.Observer
-import io.reactivex.disposables.Disposable
 import java.net.URLEncoder
 
 /**
  * Created by zhoubinjia on 2017/5/22.
  */
-class HomepageViewModel : ViewModel(), Observer<List<Apk>> {
+class HomepageViewModel : ViewModel() {
 
     var mQuery = ""
     var mApkList = MutableLiveData<List<Apk>>()
+
+    private val obtainAction: (List<Apk>) -> Unit = { apks ->
+        if (mPage == 1) {
+            mApkList.value = apks
+        } else {
+            mPage++
+            if (apks.isEmpty()) {
+                mStatus.value = 0
+            }
+            val newList = mApkList.value?.toMutableList()
+            newList?.addAll(apks)
+            mApkList.value = newList
+        }
+        mStatus.value = 2
+    }
 
     /**
      * 0: load complete
@@ -27,34 +40,9 @@ class HomepageViewModel : ViewModel(), Observer<List<Apk>> {
     fun obtainApkList() {
         mPage++
         if (mQuery.isEmpty()) {
-            ApiManager.instance.obtainHomepageApkList(mPage).subscribeWith(this)
+            ApiManager.instance.mService.obtainHomepageApkList(mPage).enqueue(obtainAction)
         } else {
-            ApiManager.instance.obtainSearchApkList(URLEncoder.encode(mQuery), mPage).subscribeWith(this)
+            ApiManager.instance.mService.obtainSearchApkList(URLEncoder.encode(mQuery), mPage).enqueue(obtainAction)
         }
-    }
-
-    override fun onSubscribe(d: Disposable) {}
-
-    override fun onNext(apks: List<Apk>?) {
-        if (mPage == 1) {
-            mApkList.value = apks ?: emptyList<Apk>()
-        } else {
-            mPage++
-            if (apks == null || apks.isEmpty()) {
-                mStatus.value = 0
-            }
-            val newList = mApkList.value?.toMutableList()
-            newList?.addAll(apks ?: emptyList())
-            mApkList.value = newList
-        }
-    }
-
-    override fun onError(e: Throwable) {
-        e.printStackTrace()
-        onComplete()
-    }
-
-    override fun onComplete() {
-        mStatus.value = 2
     }
 }

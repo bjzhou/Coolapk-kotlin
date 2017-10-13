@@ -6,30 +6,26 @@ import android.net.ConnectivityManager
 import android.os.Build
 import android.text.Html
 import android.util.Log
-import android.widget.Toast
-import bjzhou.coolapk.app.App
-import bjzhou.coolapk.app.model.*
+import bjzhou.coolapk.app.model.UpgradeApkExtend
 import bjzhou.coolapk.app.util.Constant
+import bjzhou.coolapk.app.retrofit.KCallAdapterFactory
+import bjzhou.coolapk.app.retrofit.V6GsonConverterFactory
 import bjzhou.coolapk.app.util.Utils
 import com.coolapk.market.util.AuthUtils
-import io.reactivex.Observable
-import io.reactivex.ObservableOnSubscribe
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.experimental.Deferred
+import kotlinx.coroutines.experimental.async
 import okhttp3.OkHttpClient
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.util.concurrent.TimeUnit
 
 /**
  * Created by bjzhou on 14-7-29.
  */
 class ApiManager private constructor() {
-    private lateinit var mService: CoolapkService
-    private lateinit var mServiceV6: CoolMarketServiceV6
+    lateinit var mService: CoolapkService
+    lateinit var mServiceV6: CoolMarketServiceV6
 
     init {
         initService()
@@ -61,7 +57,8 @@ class ApiManager private constructor() {
                 }).build()
         val retrofit = Retrofit.Builder()
                 .client(client)
-                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(KCallAdapterFactory())
+                .addConverterFactory(V6GsonConverterFactory.create())
                 .baseUrl(Constant.COOL_MARKET_PREURL_V6)
                 .build()
         mServiceV6 = retrofit.create(CoolMarketServiceV6::class.java)
@@ -86,6 +83,7 @@ class ApiManager private constructor() {
                 }.build()
         val retrofit = Retrofit.Builder()
                 .client(client)
+                .addCallAdapterFactory(KCallAdapterFactory())
                 .addConverterFactory(GsonConverterFactory.create())
                 .baseUrl(Constant.COOLAPK_PREURL)
                 .build()
@@ -93,118 +91,38 @@ class ApiManager private constructor() {
         mService = retrofit.create(CoolapkService::class.java)
     }
 
-    fun obtainHomepageApkList(page: Int): Observable<List<Apk>> {
-        return rxApi(mService.obtainHomepageApkList(page), emptyList())
-    }
-
-    fun obtainApkField(id: Int): Observable<ApkField> {
-        return rxApi(mService.obtainApkField(id), ApkField())
-    }
-
-    fun obtainSearchApkList(query: String, page: Int): Observable<List<Apk>> {
-        return rxApi(mService.obtainSearchApkList(query, page), emptyList())
-    }
-
-    fun obtainCommentList(id: Int, page: Int): Observable<List<Comment>> {
-        return rxApi(mService.obtainCommentList(id, page), emptyList())
-    }
-
-    fun obtainUpgradeVersions(context: Context): Observable<List<UpgradeApkExtend>> {
-        val pm = context.packageManager
-        return Observable
-                .create(ObservableOnSubscribe<String> { e ->
-                    val all = pm.getInstalledApplications(0)
-                    val sb = StringBuilder()
-                    sb.append("sdk=").append(Build.VERSION.SDK_INT)
-                    sb.append("&pkgs=")
-                    all
-                            .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 }
-                            .forEach { sb.append(it.packageName).append(",") }
-                    Log.d(TAG, "subscribe: $sb")
-                    e.onNext(sb.toString())
-                    e.onComplete()
-                })
-                .subscribeOn(Schedulers.io())
-                .concatMap {
-                    rxApi(mService.obtainUpgradeVersions(it), emptyList())
-                }
-                .observeOn(Schedulers.io())
-                .map { apks ->
-                    Log.d(TAG, "apply: onResponse")
-                    apks.filter {
-                        val pi = pm.getPackageInfo(it.apkname, 0)
-                        it.apkversioncode > pi.versionCode
-                    }.map {
-                        val pi = pm.getPackageInfo(it.apkname, 0)
-                        val ext = UpgradeApkExtend()
-                        ext.title = pi.applicationInfo.loadLabel(pm).toString()
-                        ext.logo = pi.applicationInfo.loadIcon(pm)
-                        val info = "<font color=\"#ff35a1d4\">" +
-                                pi.versionName +
-                                "</font>" + ">>" +
-                                "<font color=\"red\">" +
-                                it.apkversionname + "</font>" +
-                                "<font color=\"black\">(" + it.apksize + ")</font>"
-                        ext.info = Html.fromHtml(info)
-                        ext.apk = it
-                        ext
-                    }
-                }
-                .observeOn(AndroidSchedulers.mainThread())
-                .onErrorReturn { throwable ->
-                    Toast.makeText(App.context, throwable.toString(), Toast.LENGTH_SHORT).show()
-                    emptyList()
-                }
-    }
-
-    fun init(): Observable<List<CardEntity>> {
-        return rxApiV6(mServiceV6.init(), emptyList())
-    }
-
-    fun pictureList(type: String, page: Int): Observable<List<PictureEntity>> {
-        return rxApiV6(mServiceV6.getPictureList("", type, 0, "", ""), emptyList())
-    }
-
-    private fun <T> rxApi(call: Call<T>, empty: T): Observable<T> {
-        return Observable.create<T> {
-            call.enqueue(object : Callback<T> {
-                override fun onFailure(call: Call<T>, t: Throwable?) {
-                    it.onError(t)
-                }
-
-                override fun onResponse(call: Call<T>, response: Response<T>) {
-                    if (response.isSuccessful) {
-                        it.onNext(response.body() ?: empty)
-                        it.onComplete()
-                    } else {
-                        it.onError(Error("networkError: code: ${response.code()}, message: ${response.message()}"))
-                    }
-                }
-            })
-        }.observeOn(AndroidSchedulers.mainThread())
-    }
-
-    private fun <T> rxApiV6(call: Call<Result<T>>, empty: T): Observable<T> {
-        return Observable.create<T> {
-            call.enqueue(object : Callback<Result<T>> {
-                override fun onFailure(call: Call<Result<T>>, t: Throwable?) {
-                    it.onError(t)
-                }
-
-                override fun onResponse(call: Call<Result<T>>, response: Response<Result<T>>) {
-                    if (response.isSuccessful) {
-                        val exception = response.body().checkResult()
-                        if (exception != null) {
-                            it.onError(exception)
-                        }
-                        it.onNext(response.body().data ?: empty)
-                        it.onComplete()
-                    } else {
-                        it.onError(Error("networkError: code: ${response.code()}, message: ${response.message()}"))
-                    }
-                }
-            })
-        }.observeOn(AndroidSchedulers.mainThread())
+    fun obtainUpgradeVersions(context: Context): Deferred<List<UpgradeApkExtend>> {
+        return async {
+            val pm = context.packageManager
+            val all = pm.getInstalledApplications(0)
+            val sb = StringBuilder()
+            sb.append("sdk=").append(Build.VERSION.SDK_INT)
+            sb.append("&pkgs=")
+            all
+                    .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 }
+                    .forEach { sb.append(it.packageName).append(",") }
+            Log.d(TAG, "subscribe: $sb")
+            val apks = mService.obtainUpgradeVersions(sb.toString()).execute() ?: emptyList()
+            Log.d(TAG, "apply: onResponse")
+            apks.filter {
+                val pi = pm.getPackageInfo(it.apkname, 0)
+                it.apkversioncode > pi.versionCode
+            }.map {
+                val pi = pm.getPackageInfo(it.apkname, 0)
+                val ext = UpgradeApkExtend()
+                ext.title = pi.applicationInfo.loadLabel(pm).toString()
+                ext.logo = pi.applicationInfo.loadIcon(pm)
+                val info = "<font color=\"#ff35a1d4\">" +
+                        pi.versionName +
+                        "</font>" + ">>" +
+                        "<font color=\"red\">" +
+                        it.apkversionname + "</font>" +
+                        "<font color=\"black\">(" + it.apksize + ")</font>"
+                ext.info = Html.fromHtml(info)
+                ext.apk = it
+                ext
+            }
+        }
     }
 
     companion object {

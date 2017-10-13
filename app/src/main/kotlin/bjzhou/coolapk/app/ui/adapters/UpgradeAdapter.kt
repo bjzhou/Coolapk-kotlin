@@ -16,7 +16,6 @@ import bjzhou.coolapk.app.net.ApkDownloader
 import bjzhou.coolapk.app.net.DownloadStatus
 import bjzhou.coolapk.app.util.Settings
 import bjzhou.coolapk.app.util.Utils
-import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.list_item_upgrade_app.view.*
 import java.io.File
 import java.util.*
@@ -26,7 +25,7 @@ import java.util.*
  */
 class UpgradeAdapter(private val mActivity: FragmentActivity) : RecyclerView.Adapter<UpgradeAdapter.ViewHolder>() {
     private var mUpgradeList: List<UpgradeApkExtend> = ArrayList()
-    private var mObserveMap = HashMap<Apk, Disposable>()
+    private var mObserveMap = HashMap<Apk, Timer>()
     private val mButtonMap = WeakHashMap<Apk, Button>()
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): UpgradeAdapter.ViewHolder {
@@ -67,9 +66,8 @@ class UpgradeAdapter(private val mActivity: FragmentActivity) : RecyclerView.Ada
         }
     }
 
-    private fun observeApk(apk: Apk): Disposable {
-        return ApkDownloader.instance.observeDownloadStatus(apk)
-                .subscribe {
+    private fun observeApk(apk: Apk): Timer {
+        return ApkDownloader.instance.observeDownloadStatus(apk) {
                     val button = mButtonMap[apk]
                     if (button != null && button.tag as Apk == apk) {
                         button.post {
@@ -80,7 +78,7 @@ class UpgradeAdapter(private val mActivity: FragmentActivity) : RecyclerView.Ada
                             } else if (it.status == DownloadManager.STATUS_SUCCESSFUL) {
                                 button.text = "下载完成"
                             } else {
-                                button.text = it.percent.toString() + "%"
+                                button.text = "${it.percent}%"
                             }
                         }
                     }
@@ -103,7 +101,7 @@ class UpgradeAdapter(private val mActivity: FragmentActivity) : RecyclerView.Ada
                     val file = File(Settings.instance.downloadDir, apkExtend.apk.filename)
                     val pkgInfo = App.context.packageManager.getPackageArchiveInfo(file.absolutePath, 0)
                     if (file.exists() && pkgInfo != null) {
-                        Utils.installApk(Uri.fromFile(file))
+                        Utils.installApk(itemView.context, Uri.fromFile(file))
                     }
                 } else if (status.status == DownloadStatus.STATUS_NOT_STARTED || status.status == DownloadManager.STATUS_FAILED) {
                     ApkDownloader.instance.download(apkExtend.apk)

@@ -4,16 +4,15 @@ import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import bjzhou.coolapk.app.R
 import bjzhou.coolapk.app.net.ApiManager
 import bjzhou.coolapk.app.ui.adapters.UpgradeAdapter
-import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_upgrade.view.*
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.launch
 
 /**
  * Created by bjzhou on 14-8-13.
@@ -49,16 +48,17 @@ class UpgradeFragment : Fragment() {
     }
 
     private fun obtainUpgradeVersions() {
-        ApiManager.instance.obtainUpgradeVersions(activity)
-                .delay(500, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .doFinally {
-                    view?.swipeRefresh?.isRefreshing = false
-                }
-                .subscribe { upgradeApkExtends ->
-                    mAdapter.setUpgradeList(upgradeApkExtends)
-                    mAdapter.notifyDataSetChanged()
-                }
+        launch(UI) {
+            try {
+                val res = ApiManager.instance.obtainUpgradeVersions(activity).await()
+                mAdapter.setUpgradeList(res)
+                mAdapter.notifyDataSetChanged()
+            } catch(e: Exception) {
+                e.printStackTrace()
+            } finally {
+                view?.swipeRefresh?.isRefreshing = false
+            }
+        }
     }
 
     companion object {

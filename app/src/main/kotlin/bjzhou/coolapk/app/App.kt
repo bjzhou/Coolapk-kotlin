@@ -3,7 +3,9 @@ package bjzhou.coolapk.app
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
-import io.reactivex.plugins.RxJavaPlugins
+import android.os.Build
+import android.os.StrictMode
+
 
 /**
  * Created by bjzhou on 14-7-29.
@@ -15,7 +17,10 @@ class App : Application() {
 //        startService(Intent(this, UpgradeService::class.java))
         context = applicationContext
 
-        RxJavaPlugins.setErrorHandler(Throwable::printStackTrace)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val builder = StrictMode.VmPolicy.Builder()
+            StrictMode.setVmPolicy(builder.build())
+        }
     }
 
     companion object {

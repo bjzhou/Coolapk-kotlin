@@ -16,11 +16,12 @@ import bjzhou.coolapk.app.ui.base.BaseActivity
 import bjzhou.coolapk.app.util.Constant
 import bjzhou.coolapk.app.util.Settings
 import bjzhou.coolapk.app.util.Utils
-import io.reactivex.Observable
-import io.reactivex.ObservableEmitter
+import kotlinx.coroutines.experimental.Deferred
 import java.io.File
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.timer
+import kotlin.concurrent.timerTask
 
 /**
  * author: zhoubinjia
@@ -57,7 +58,7 @@ class ApkDownloader {
                                 .getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))
                         cursor.close()
                         val uri = Uri.parse(localUriString)
-                        Utils.installApk(uri)
+                        Utils.installApk(context, uri)
                     }
                 }
 
@@ -182,24 +183,21 @@ class ApkDownloader {
         return status
     }
 
-    fun observeDownloadStatus(apk: Apk?): Observable<DownloadStatus> {
-        return Observable.interval(100, TimeUnit.MILLISECONDS)
-                .flatMap {
-                    Observable.create { it: ObservableEmitter<DownloadStatus> ->
-                        val status = getDownloadStatus(apk)
-                        if (status.status == DownloadStatus.STATUS_NOT_STARTED) {
-                            it.onComplete()
-                            return@create
-                        }
-                        it.onNext(status)
-                        if (status.status == DownloadManager.STATUS_SUCCESSFUL || status.status == DownloadManager.STATUS_FAILED) {
-                            it.onComplete()
-                        }
-                    }
-                }
+    fun observeDownloadStatus(apk: Apk?, action: (DownloadStatus) -> Unit): Timer {
+        var timer: Timer? = null
+        val task: TimerTask.() -> Unit = {
+            val status = getDownloadStatus(apk)
+            if (status.status == DownloadStatus.STATUS_NOT_STARTED) {
+                timer?.cancel()
+            }
+            if (status.status == DownloadManager.STATUS_SUCCESSFUL || status.status == DownloadManager.STATUS_FAILED) {
+                timer?.cancel()
+            }
+            action.invoke(status)
+        }
+        timer = timer(period = 100, action = task)
+        return timer
     }
-
-
 
     private object Holder { val INSTANCE = ApkDownloader() }
 

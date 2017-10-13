@@ -52,8 +52,7 @@ class PicturesFragment : Fragment() {
         mAdapter = PicturesAdapter()
         mPicturesView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         mPicturesView.adapter = mAdapter
-        ApiManager.instance.pictureList(type, 0)
-                .subscribe { pictureEntities -> mAdapter.setEntities(pictureEntities) }
+        ApiManager.instance.mServiceV6.getPictureList(type = type).enqueue(mAdapter::setEntities)
     }
 
     internal inner class PicturesAdapter : RecyclerView.Adapter<ViewHolder>() {

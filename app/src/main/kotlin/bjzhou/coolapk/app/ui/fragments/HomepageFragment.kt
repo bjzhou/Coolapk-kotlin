@@ -36,9 +36,8 @@ class HomepageFragment : LifecycleFragment() {
         super.onCreate(savedInstanceState)
 
         mViewModel = ViewModelProviders.of(this)[HomepageViewModel::class.java]
-        val args = arguments
-        if (args != null) {
-            mViewModel.mQuery = args.getString("query")
+        if (arguments != null) {
+            mViewModel.mQuery = arguments.getString("query")
         }
 
     }

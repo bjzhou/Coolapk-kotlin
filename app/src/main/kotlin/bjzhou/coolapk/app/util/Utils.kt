@@ -22,9 +22,14 @@ import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.preference.PreferenceManager
+import android.support.v4.content.FileProvider
 import android.text.Html
 import bjzhou.coolapk.app.App
 import java.util.*
+import android.util.Log
+import bjzhou.coolapk.app.BuildConfig
+import java.io.File
+
 
 /**
  * Class containing some static utility methods.
@@ -63,10 +68,16 @@ object Utils {
             return cm.activeNetworkInfo != null && cm.activeNetworkInfo.isConnectedOrConnecting
         }
 
-    fun installApk(uri: Uri) {
+    fun installApk(context: Context, uri: Uri) {
         val intent = Intent(Intent.ACTION_VIEW)
-        intent.setDataAndType(uri, "application/vnd.android.package-archive")
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        App.context.startActivity(intent)
+        var contentUri = uri
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            contentUri = FileProvider.getUriForFile(App.context, BuildConfig.APPLICATION_ID + ".fileProvider", File(uri.path))
+        }
+        Log.d("Utils", "" + uri + " new" + contentUri)
+        intent.setDataAndType(contentUri, "application/vnd.android.package-archive")
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent)
     }
 }
